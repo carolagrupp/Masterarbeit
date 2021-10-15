@@ -1,0 +1,3 @@
+In Pfad Leiste CMD eingeben, dort folgendes eingeben:
+
+pyuic5 -x mainWindow.ui -o mainWindow.py
