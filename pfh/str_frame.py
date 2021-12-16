@@ -36,7 +36,8 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
     A_einzug=element.A_einzug
     l_fassade=element.l_fassade
 
-    if element.typ=='Riegel':
+    #M_max und N_max für aktuelles Geschoss 
+    if element.typ=='Riegel':   #Wind und Vertikallasten
         M_max=((Gd+Qd)*b_raster+element.A*gamma)*b_raster**2*0.107 + 1/5*1/4*h_geschoss/2*gamma_w*V[s]     # q*l*0.107 plus Stützenmoment, welches sich aus der Horizontalkraft der Innenstützen (1/4 der Querkraft pro Rahmen) und der halben Geschosshöhe zusammensetzt
         M_kombi=0
         N_max=0
@@ -47,22 +48,22 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         M_max= 1/4*h_geschoss/2*gamma_w*V[s]/5      
         M_kombi=Psi_w*1/4*h_geschoss/2*gamma_w*V[s]/5
 
-        if  s==n and x*n_abschnitt < n:
+        if  s==n and x*n_abschnitt < n: #unvollständiger Abschnitt
             Ng=element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
             Ng_riegel=buildingProp.G_riegel[-1]*gamma_g*10*(2*A_einzug/b_raster**2+0.5*l_fassade/b_raster)  # Faktor am Ende sorgt dafür dass für alle Stützentypen Riegellänge passt
 
         else:
-            Ng=element.A*gamma*n_abschnitt*h_geschoss*gamma_g
-            i=int(s/n_abschnitt-1)
-            Ng_riegel=buildingProp.G_riegel[i]*gamma_g*10*(2*A_einzug/b_raster**2+0.5*l_fassade/b_raster)
+            Ng=element.A*gamma*n_abschnitt*h_geschoss*gamma_g   #EG aus aktuellem Abschnitt (noch nicht in Ng_darüberliegend)
+            i=int(s/n_abschnitt-1)      #-1, da Stellen ab 0 existieren
+            Ng_riegel=buildingProp.G_riegel[i]*gamma_g*10*(2*A_einzug/b_raster**2+0.5*l_fassade/b_raster)   #EG Riegel
         
         N_max= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha)+l_fassade*gd_fassade)*s+Ng_riegel     # Gewicht von Riegeln lastet je Geschoss zusätzlich auf Stützen 
         N_kombi= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha*Psi_q)+l_fassade*gd_fassade)*s+Ng_riegel   # Bei N_max wird q als 1. veränderl. Einwirkung angesehen, Wind wird abgemindert
 
 
     if element.typ=='Stiel_außen':
-        M_max=((Gd+Psi_q*Qd)*A_einzug*2/b_raster+element.A*gamma)*b_raster**2/12 + 1/8*h_geschoss/2*gamma_w*V[s]/5      
-        M_kombi=((Gd+Qd)*A_einzug*2/b_raster+element.A*gamma)*b_raster**2/12 + Psi_w*1/8*h_geschoss/2*gamma_w*V[s]/5
+        M_max=((Gd+Psi_q*Qd)*A_einzug*2/b_raster+element.A*gamma)*b_raster**2/12 + 1/8*h_geschoss/2*gamma_w*V[s]/5      #aus Streckenlast + aus H-Last, Kombinationsbeiwert q
+        M_kombi=((Gd+Qd)*A_einzug*2/b_raster+element.A*gamma)*b_raster**2/12 + Psi_w*1/8*h_geschoss/2*gamma_w*V[s]/5    #Kombinationsbeiwert Wind
             
         M_kräftepaar=M[s]/5-h_geschoss/2*V[s]/5         # Anteil des Moments der nicht über ein Moment in den Stützen sondern über ein Kräftepaar abgetragen wird
         F=gamma_w*M_kräftepaar/(b_raster*4)                          # Kraft in den Außenstützen aus Kräftepaar, wenn Außenstützen dreimal so viel Kraft aufnehmen wie Innenstützen
@@ -80,7 +81,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         N_kombi= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha*Psi_q)+l_fassade*gd_fassade)*s+Ng_riegel+F
 
 
-    if element.typ=='Riegel ohne PFH':
+    if element.typ=='Riegel ohne PFH':  #nur Vertikallasten
         M_max=((Gd+Qd)*b_raster+element.A*gamma)*b_raster**2*0.107    # q*l*0.107 plus Stützenmoment, welches sich aus der Horizontalkraft der Innenstützen (1/4 der Querkraft pro Rahmen) und der halben Geschosshöhe zusammensetzt
         M_kombi=0
         N_max=0
@@ -158,11 +159,13 @@ def buildingStiffness(buildingProp,materialProp,riegel,innenStütze,randStütze,
 def shearStiffnessModification (buildingProp,riegel,innenStütze,randStütze,eckStütze,delta_t):
     # Die Schubsteifigkeit wird immer vom schwächsten Element bestimmt - siehe Formel
 
+    #wenn Stiel kleinere GAs verursacht
     if buildingProp.GA_stielEI <= min(buildingProp.GA_riegelEI,buildingProp.GA_stielGA,buildingProp.GA_riegelGA) or buildingProp.GA_stielGA <= min(buildingProp.GA_riegelEI,buildingProp.GA_stielEI,buildingProp.GA_riegelGA):                      
         innenStütze.t= [element+delta_t for element in innenStütze.t]
         randStütze.t= [element+delta_t for element in randStütze.t]
         eckStütze.t= [element+delta_t for element in eckStütze.t]
 
+    #wenn Riegel vergrößert werden muss
     else:
         riegel.t= [element+delta_t for element in riegel.t]
 
@@ -183,8 +186,8 @@ def design(buildingProp,loads,materialProp):
     #stiel=building.elements(A,0,'Stiel_innen','Quadratisches Hohlprofil')
     #stiel_außen=building.elements(A/2,b_raster,'Stiel_außen','Quadratisches Hohlprofil')
     innenStütze=building.elements(A,0,'Stiel_innen','Quadratisches Hohlprofil')       # Einzugsfläche, Fassadenlänge, Typ, Profil
-    randStütze=building.elements(1/2*A,b_raster,'Stiel_innen','Quadratisches Hohlprofil')
-    randStütze_außen=building.elements(1/2*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil')
+    randStütze=building.elements(1/2*A,b_raster,'Stiel_innen','Quadratisches Hohlprofil')#Randstütze in innerem Riegel
+    randStütze_außen=building.elements(1/2*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil')#Randstütze in äußerem Riegel
     eckStütze=building.elements(1/4*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil')
 
     riegelOhnePFH=building.elements(A,0,'Riegel ohne PFH','Rechteckiges Hohlprofil')
@@ -197,8 +200,8 @@ def design(buildingProp,loads,materialProp):
     # Tragfähigkeitsnachweise:
     calculations.calcElementWidth(riegel,buildingProp,loads,materialProp,str_)
 
-    calculations.calcWeight(buildingProp,materialProp,riegel)
-    riegel.G=[element*buildingProp.b_raster/buildingProp.h_geschoss for element in riegel.G]
+    calculations.calcWeight(buildingProp,materialProp,riegel)   #erstellt riegel.G in calcWeight, Abschnittsweise Liste = EG des Querschnitts aller Geschosse darüber
+    riegel.G=[element*buildingProp.b_raster/buildingProp.h_geschoss for element in riegel.G]    #Umrechnen da Länge b_raster und nicht h_geschoss
     buildingProp.G_riegel=riegel.G
 
     calculations.calcElementWidth(innenStütze,buildingProp,loads,materialProp,str_)
@@ -229,8 +232,8 @@ def design(buildingProp,loads,materialProp):
     #calculations.calcElementWidth(stielOhnePFH,buildingProp,loads,materialProp,str_)
     #calculations.calcElementWidth(stielOhnePFH_außen,buildingProp,loads,materialProp,str_)
     
-    ts0=randStütze.t[-1]
-    tr0=riegel.t[-1]
+    ts0=randStütze.t[-1]    #QS der Randstütze im untersten Abschnitt
+    tr0=riegel.t[-1]        #QS des Riegels im untersten Abschnitt
 
     #for i in range (0,len(stielOhnePFH.t)):
     #    stielOhnePFH.t[i]=max(stielOhnePFH.t[i],stielOhnePFH_außen.t[i])    
@@ -239,7 +242,7 @@ def design(buildingProp,loads,materialProp):
     calculations.buildingDeflection(buildingProp,loads,materialProp,str_,riegel,innenStütze,randStütze,eckStütze)
     calculations.interstoryDrift(buildingProp,loads,materialProp,str_,riegel,innenStütze,randStütze,eckStütze)
     
-    if randStütze.t[-1] > ts0 or riegel.t[-1] > tr0:
+    if randStütze.t[-1] > ts0 or riegel.t[-1] > tr0:    #Vergößerung des QSs in Verformungsnachweisen
         buildingProp.NW_maßgebend='Verformung'
     
     else:
@@ -259,8 +262,8 @@ def design(buildingProp,loads,materialProp):
     calculations.calcWeight(buildingProp,materialProp,randStützeOhnePFH)
     calculations.calcWeight(buildingProp,materialProp,eckStützeOhnePFH)
 
-    buildingProp.G_innenStützen=[element*9 for element in innenStütze.G]
-    buildingProp.G_aussteifung=[element*4*5*2 for element in riegel.G]
+    buildingProp.G_innenStützen=[element*9 for element in innenStütze.G]    #Gesamtgewicht je Abschnitt
+    buildingProp.G_aussteifung=[element*4*5*2 for element in riegel.G]      #Gesamtgewicht der Riegel je Abschnitt
 
     buildingProp.G_außenStützen=[]
     buildingProp.G_total=[]

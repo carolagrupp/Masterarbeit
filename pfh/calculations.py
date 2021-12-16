@@ -5,19 +5,25 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-09      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:
 # ------------------------------------------------------------------------------
-# Imports:      
+# Imports:
 from pfh import fea
 
 # ------------------------------------------------------------------------------
 
 def calcProfileProp (element,buildingProp,materialProp,t):
-    b_kern=buildingProp.b_raster*2
-    minderung_A=materialProp.minderung_A
+    #für calcElementWidth und calcWeight
+    b_kern=buildingProp.b_raster*2          #in m
+    minderung_A=materialProp.minderung_A    #in app.py submit_materialProp ist Eingabe in GUI Profil
     minderung_I=materialProp.minderung_I
     verhältnis_td=materialProp.verhältnis_td
+    h_geschoss = buildingProp.h_geschoss
 
     if element.profil=='Vollprofil':
         element.A=(t/100)*(t/100)
@@ -25,22 +31,22 @@ def calcProfileProp (element,buildingProp,materialProp,t):
         element.I=(t/100)**4/12
         element.W=element.I*2/(t/100)
     
-    if element.profil=='Kern':
-        element.A=b_kern*t/100*4
+    elif element.profil=='Kern': #in str_core
+        element.A=(b_kern*t/100)*4        #in m, durch 100 da t in cm
         element.A_min=minderung_A*element.A
-        element.I=((b_kern+t/100)**4/12 - (b_kern-t/100)**4/12)*minderung_I
-        element.W=element.I*2/(b_kern+t/100)
+        element.I=((b_kern+t/100)**4/12 - (b_kern-t/100)**4/12)*minderung_I #Volles Quadrat - inneres Quadrat
+        element.W=element.I*2/(b_kern+t/100)    #I/Hebelarm
 
-    if element.profil=='Rechteckiges Hohlprofil':
+    elif element.profil=='Rechteckiges Hohlprofil':
         h=t/100         # h und b=t/200 sind Außenmaße nicht Achsmaße wie beim Kern
-        b=t/200
+        b=t/(2*100)     #Breite = halbe Höhe t
         d=h*verhältnis_td
         element.A=h*b-(h-d*2)*(b-d*2)
         element.A_min=element.A
         element.I=h**3*b/12-(h-d*2)**3*(b-d*2)/12
         element.W=element.I*2/h
                             
-    if element.profil=='Quadratisches Hohlprofil':
+    elif element.profil=='Quadratisches Hohlprofil':
         h=t/100         # h und b=h sind Außenmaße
         d=t/100*verhältnis_td
         element.A=h**2-(h-d*2)**2
@@ -48,23 +54,36 @@ def calcProfileProp (element,buildingProp,materialProp,t):
         element.I=h**4/12-(h-d*2)**4/12
         element.W=element.I*2/h  
 
+    elif element.profil == 'Outrigger':
+        h = h_geschoss
+        b = t/100
+        element.A = h*b
+        element.A_min = minderung_A*element.A
+        element.I = b*h**3/12
+        element.W = element.I*2/h
+        
+
+
 
 def calcElementWidth(element,buildingProp,loads,materialProp,str_): 
     'Nachweis der Tragfähigkeit der Elemente'
+    # in str_.design für alle Tragwerkstypen (Innenstütze, ...)
     # Extrahieren der benötigten Eigenschaften aus den Objekten:   
     n=buildingProp.n
     n_abschnitt=buildingProp.n_abschnitt
-    x=buildingProp.x
+    x=buildingProp.x        #def. in app.py submit_buildingProp:n/n_abschnitt
     h_geschoss=buildingProp.h_geschoss
         
-    f=materialProp.f
+    f=materialProp.f        #Festigkeit Material
     gamma=materialProp.gamma
 
+    #Abminderungsbeiwert Einzugsfläche (EC1-1-1/NA, 6.3.1.2(10))
     if loads.alpha_a=="Nein" or element.A_einzug == 0:
         alpha_a=1
     
     else:   
-        alpha_a=0.5+10/element.A_einzug
+        alpha_a=0.5+10/element.A_einzug     #A_einzug angegeben in str_.design
+    buildingProp.alpha_a = alpha_a
 
     #Startwerte:
     t=materialProp.t_min
@@ -72,22 +91,26 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
     b=[]
     Ng_darüberliegend=0
 
-    if x*n_abschnitt < n:
+    if x*n_abschnitt < n:   #ein weiterer Iterationsschritt nötig, da x für Ganzzahl abgerundet wurde
         z=x+2
+        
     
-    else:
+    else:               #wenn x*n_abschnitt = n
         z=x+1
 
+    buildingProp.z = z
+    buildingProp.j = 0        #Iterationsparameter für Outrigger
+    
     #Äußere Schleife: Wiederholen für alle Abschnitte
     for i in range(1,z):
 
-        if i==x+1:
+        if i==x+1:      #nur wenn z=x+2
             s=n        # s für Stelle an der berechnet wird
         
-        else: 
+        else: #s Geschosse über aktuellem Abschnitt
             s=n_abschnitt*i
         
-        sigma=2*f
+        sigma=2*f   #Anfangswert, damit sigma für Schleife größer als f ist
 
         if loads.alpha_n=="Nein":
             alpha_n=1
@@ -95,25 +118,35 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         else:
             alpha_n=0.7+0.6/(n_abschnitt*i)
         
-        alpha=min(alpha_a,alpha_n)
-
+        alpha=min(alpha_a,alpha_n)      #Nach Norm darf nur einer der beiden Werte angewendet werden
+        
+        buildingProp.i_aktuell = i
         #Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
         while sigma > f:
-            calcProfileProp(element,buildingProp,materialProp,t)
+            calcProfileProp(element,buildingProp,materialProp,t)        #A, I und W für aktuelles t
+            buildingProp.A_min_aktuell = element.A_min
+            buildingProp.W_aktuell = element.W
             N_max,N_kombi,M_max,M_kombi=str_.calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t)
-                
+            
+            if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True:
+                buildingProp.outriggerAbschnitt = False
+                for k in buildingProp.posOut_abschnitte:
+                    if i == buildingProp.posOut_abschnitt[k]:
+                        buildingProp.outriggerAbschnitt = True
+
             sigma_Nmax=M_kombi/element.W+N_max/element.A_min     # Abdeckung beider Kombinationen aus den veränderlichen Lasten durch Wind und Verkehr
             sigma_Mmax=M_max/element.W+N_kombi/element.A_min
             
             sigma=max(sigma_Nmax,sigma_Mmax)
          
-            if sigma>f:
+            if sigma>f:     #Querschnittsvergrößerung
                 if buildingProp.tragwerk=='Framed Tube' and element.typ=='Stiel':
                     buildingProp.riegel.t[i-1],t = str_.interiaMomentModification(buildingProp,buildingProp.riegel.t[i-1],t,a)
-
+                    
                 else:
-                    t=t+a
+                    t=t+a   #Erhöhen um delta_t
         
+        #Ng auf darunterliegendes Geschoss aus EG des Elements
         if i==x+1:
             Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*1.35
 
@@ -122,7 +155,9 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
        
         b.append(t)             # t in Liste übergeben
       
-    element.t=b
+    element.t=b         #Länge = Anzahl Abschnitte
+
+
 
 
 def calcShearDeformation(buildingProp,loads):
@@ -163,12 +198,12 @@ def calcShearDeformation(buildingProp,loads):
 
 def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=None,element3=None,element4=None):
     'Nachweis der Verformung'
-    
-    w = 2*loads.w_max
-    delta_t=materialProp.delta_t
+    #in str_.design
+    w = 2*loads.w_max       #loads.w_max=h_total/Eingabe w_max, in m, 2x, damit der Startwert für die while Schleife größer als w_max ist
+    delta_t=materialProp.delta_t    #Schrittweite Querschnittserhöhung
     buildingProp.mue=[]
 
-    for i in range (0,len(element1.t)):
+    for i in range (0,len(element1.t)): #element1.t = kern.t (siehe str_core.design)
         buildingProp.mue.append(0)
 
     while w > loads.w_max:
@@ -176,13 +211,13 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         
         # Maximale Verformung berechnen
         feModel=fea.feModel(buildingProp,loads,materialProp)
-        w_EI = fea.feModel.calcStaticWindloadDeflection(feModel)
+        w_EI = fea.feModel.calcStaticWindloadDeflection(feModel)    #Angabe Liste jedes Geschoss
         
         w_GA=calcShearDeformation(buildingProp, loads)
                
         w = w_EI[0] + w_GA[0]
         
-        if element2 == None and w > loads.w_max:
+        if element2 == None and w > loads.w_max:        #zB core hat nur ein element, bei dem der QS vergrößert werden kann
             element1.t= [element+delta_t for element in element1.t]
 
         if element2 != None and w > loads.w_max and w_EI[0] > loads.w_verhältnis*w_GA[0]:      # Biegeverformung größer als erwünscht
@@ -191,7 +226,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         if element2 != None and w > loads.w_max and w_EI[0] <= loads.w_verhältnis*w_GA[0]:       # Schubverfromung größer als erwünscht
             str_.shearStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)
            
-    buildingProp.w_EI=w_EI # Wert an Spitze
+    buildingProp.w_EI=w_EI # Liste mit Werten an jedem Geschoss
     buildingProp.w_GA=w_GA # Liste mit Werten an jedem Geschoss
 
     buildingProp.w=w
@@ -200,7 +235,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
 def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,element3=None,element4=None):
     'Nachweis interstory Drift'
     
-    Teta_i=2*loads.maxTeta_i
+    Teta_i=2*loads.maxTeta_i    #2x, damit Startwert für Teta_i> als maxTeta ist für Schleife
     delta_t=materialProp.delta_t
     buildingProp.mue=[]
 

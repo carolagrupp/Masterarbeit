@@ -5,6 +5,10 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-27      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:
 # ------------------------------------------------------------------------------
@@ -14,12 +18,13 @@ import numpy as np
 from feastruct.pre.material import Material
 from feastruct.pre.section import Section
 import feastruct.fea.cases as cases
+from feastruct.fea.elements import frame2d
 from feastruct.fea.frame_analysis import FrameAnalysis2D
 from feastruct.solvers.linstatic import LinearStatic
 from feastruct.solvers.naturalfrequency import NaturalFrequency
 from feastruct.solvers.feasolve import SolverSettings
 
-import plotters.plot2D as plt
+import pyLEK.plotters.plot2D as plt
 
 # ------------------------------------------------------------------------------
 # Abbreviations
@@ -80,10 +85,17 @@ class feModel:
         # dof=0: Bewegung in x, dof=1: Bewegung in y, dof=2: Bewegung in z, dof=3: Rotation um x, dof=4 Rotation um y, dof=5 Rotation um z
         # Erlaubt nur Bewegung der Knoten in x und z Richtung und Rotation um y-Achse (-> zweidimensional)
 
-        # Der support Knoten (letzter Knoten, daher -1) ist eingespannt und hat daher gar keine Freiheiten
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=0)
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=1)
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=5)
+        # Der support Knoten (letzter Knoten, daher -1) ist eingespannt und hat daher gar keine Freiheiten, keine Federsteifigkeit
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=0, stiff=0)      #add_nodal_support in fea>cases
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=1, stiff=0)
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=5, stiff=0)
+
+
+        if buildingProp.tragwerk=='Outrigger':
+            for j,i in enumerate(buildingProp.posOut):
+                self.freedom_case.add_nodal_support(node=self.nodes[i], val=0, dof=5, stiff=buildingProp.K[j])
+                
+
 
         # Anzahl Abschnitte mit unterschiedlichen Steifigkeiten
         self.x=buildingProp.x
@@ -92,7 +104,7 @@ class feModel:
         self.load_case = cases.LoadCase()
 
         for i in range(0,self.n+1):
-            self.load_case.add_nodal_load(node=self.nodes[i], val=loads.F_p[i] , dof=0) # i+1 (support, tip)
+            self.load_case.add_nodal_load(node=self.nodes[i], val=loads.F_p[i] , dof=0, stiff = 0) # i+1 (support, tip)
 
         # an analysis case relates a support case to a load case
         self.analysis_case = cases.AnalysisCase(freedom_case=self.freedom_case, load_case=self.load_case)
@@ -116,7 +128,7 @@ class feModel:
                 # print("Beam von j=" + str(j) + "bis j+1=" + str(j+1))
                 self.beams.append(beam)
 
-        if buildingProp.x*buildingProp.n_abschnitt<buildingProp.n:      # unterster Abschnitt
+        if buildingProp.x*buildingProp.n_abschnitt<buildingProp.n:      # unterster Abschnitt, wenn Abschnitte nicht aufgehen
             self.section= Section(area=1, ixx=buildingProp.I[-1])
             z=buildingProp.x*buildingProp.n_abschnitt
             self.material = Material("Dummy", materialProp.E, 0.2, buildingProp.mue[-1], colour='w')
@@ -126,6 +138,36 @@ class feModel:
                 beam = self.analysis.create_element(el_type='EB2-2D', nodes=[self.nodes[z+j], self.nodes[z+j+1]], material=self.material, section=self.section)
                 #print("Beam von j=" + str(z+j) + "bis j+1=" + str(z+j+1))
                 self.beams.append(beam)
+
+    def calcBendingMoment(self):
+         # you can easily change the solver settings
+        settings = SolverSettings()
+        settings.linear_static.time_info = False
+
+        # the linear static solver is an object and acts on the analysis object
+        solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
+        solver.solve()
+
+        bm = []   
+        [xis, bm] = frame2d.EulerBernoulli2D_2N.get_bmd(len(self.nodes), analysis_case = self.analysis_case)
+        #Liest es jetzt einen Wert für jede Node oder zwei? Dann eventeuell jeden zwieten löschen     
+        return bm 
+
+    def calcreactions(self):
+         # you can easily change the solver settings
+        settings = SolverSettings()
+        settings.linear_static.time_info = False
+
+        # the linear static solver is an object and acts on the analysis object
+        solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
+        solver.solve()
+
+        reactions = []
+        for support in self.analysis_case.freedom_case.items:
+            reaction = support.get_reaction(analysis_case=self.analysis_case)
+            reactions.append(reaction)
+       
+        return reactions 
 
 
     def calcStaticWindloadDeflection(self):        
@@ -156,9 +198,9 @@ class feModel:
         #print (reaction)
         # read out deformation at top 
         displacements = []
-        for i in range (0, len(self.nodes)):
+        for i in range (0, len(self.nodes)):    #len = Anzahl Stockwerke
             displacements.append(self.nodes[i].get_displacements(self.analysis_case)[0])
-        #delta_tip = self.nodes[0].get_displacements(self.analysis_case)[0]
+            #delta_tip = self.nodes[0].get_displacements(self.analysis_case)[0]
        
         return displacements #delta_tip   
 
@@ -180,17 +222,19 @@ class feModel:
         Teta_i_GA=[]
 
         for i in range (0,len(self.nodes)-1): # -1 damit für den untersten Knoten Schleife nicht ausgeführt wird (Kein Knoten unterhalb)
-
+            
+            #Verschiebung oben des Geschosses in x-Richtung (deswegen 0)
             w_EI_1 = self.nodes[i].get_displacements(self.analysis_case)[0]
             w_GA_1 = buildingProp.w_GA[i]
             
+            #Verschiebung unten des Geschosses
             w_EI_2 = self.nodes[i+1].get_displacements(self.analysis_case)[0]
             w_GA_2 = buildingProp.w_GA[i+1]
 
             Teta_i_EI.append(w_EI_1-w_EI_2)
             Teta_i_GA.append(w_GA_1-w_GA_2)
 
-            if maxTeta_i < Teta_i_EI[-1]+Teta_i_GA[-1]:
+            if maxTeta_i < Teta_i_EI[-1]+Teta_i_GA[-1]: #Verschiebung an aktuellem Geschoss (letzter Eintrag) 
                 maxTeta_i=Teta_i_EI[-1]+Teta_i_GA[-1]
                 maxTeta_i_EI=Teta_i_EI[-1]
                 maxTeta_i_GA=Teta_i_GA[-1]
@@ -201,7 +245,7 @@ class feModel:
         buildingProp.Teta_i_EI.append(0)    # Hinzufügen einer Null ans Ende für das unterste Geschoss
         buildingProp.Teta_i_GA.append(0)
 
-        w_EI_max=self.nodes[0].get_displacements(self.analysis_case)[0]
+        w_EI_max=self.nodes[0].get_displacements(self.analysis_case)[0] #Verschiebung ganz oben
 
         return maxTeta_i, w_EI_max
 
@@ -262,7 +306,7 @@ class feModel:
         # K_gen = 3 * E * I /(L^3) / 
 
    
-def calcStress(element,buildingProp,loads,materialProp):
+def calcStress(element,buildingProp,loads,materialProp):   
     N_max= element.Ng_darüberliegend+(element.A_einzug*(loads.gd+loads.qd*element.alpha)+element.l_Fassade*loads.gd_Fassade)*buildingProp.n_abschnitt*element.i+element.A*materialProp.gamma*buildingProp.n_abschnitt*buildingProp.h_geschoss*1.35
     N_kombi= element.Ng_darüberliegend+(element.A_einzug*(loads.gd+loads.qd*element.alpha*loads.Psi_q)+element.l_Fassade*loads.gd_Fassade)*buildingProp.n_abschnitt*element.i+element.A*materialProp.gamma*buildingProp.n_abschnitt*buildingProp.h_geschoss*1.35
     
@@ -270,6 +314,7 @@ def calcStress(element,buildingProp,loads,materialProp):
     sigma_Mmax=1.5*loads.M[element.i-1]/element.W+N_kombi/element.A
 
     sigma=max(sigma_Nmax,sigma_Mmax)
+
 
     return sigma
 

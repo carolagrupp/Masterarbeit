@@ -41,7 +41,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
 
 
     if element.typ=='Riegel':
-        M_max=1/2*1/(4*n_stiele)*h_geschoss/2*gamma_w*V[s]     
+        M_max=1/2*1/(4*n_stiele)*h_geschoss/2*gamma_w*V[s]   #2 Rahmen pro Richtung, 4*n Stiele entlang des Rahmens
         M_kombi=0
         N_max=0
         N_kombi=0
@@ -59,10 +59,10 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         if  s==n and x*n_abschnitt < n:
             Ng=element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
             calculations.calcWeight(buildingProp, materialProp, buildingProp.riegel)
-            Ng_riegel=buildingProp.riegel.G[-1]*gamma_g*10
+            Ng_riegel=buildingProp.riegel.G[-1]*gamma_g*10  #Umrechnung b_riegel/h_geschoss fehlt?, s. frame Z. 204
 
         else:
-            Ng=element.A*gamma*n_abschnitt*h_geschoss*gamma_g
+            Ng=element.A*gamma*n_abschnitt*h_geschoss*gamma_g   #EG aus aktuellem Abschnitt (noch nicht in Ng_darüberliegend)
             i=int(s/n_abschnitt-1)
             calculations.calcWeight(buildingProp, materialProp, buildingProp.riegel)
             Ng_riegel=buildingProp.riegel.G[i]*gamma_g*10
@@ -80,7 +80,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         
         else:
             Ng=element.A*gamma*n_abschnitt*h_geschoss*gamma_g
-            i=int(s/n_abschnitt-1)
+            i=int(s/n_abschnitt-1)  #Wofür?
         
         N_max= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha)+l_fassade*gd_fassade)*s
         N_kombi= 0
@@ -94,7 +94,7 @@ def calcInteriaMoment(buildingProp,materialProp,s,stiel,t_stiel):
     if s < buildingProp.n:
         i=int(s/buildingProp.n_abschnitt-1)
     
-    else:
+    else:   #Nur wenn s=buildingProp.n
         i=-1
 
     riegel=buildingProp.riegel
@@ -107,20 +107,21 @@ def calcInteriaMoment(buildingProp,materialProp,s,stiel,t_stiel):
     d_c=0#t_stiel/100 #(t_stiel*materialProp.verhältnis_td*2)/100
     E=materialProp.E
     G=materialProp.G
-    sp=buildingProp.b_raster/buildingProp.n_stiele
+    sp=buildingProp.b_raster/buildingProp.n_stiele  #Abstand Stiele untereinander
     
-    d1=(h-d_b)**3/(12*E*stiel.I)
+    d1=(h-d_b)**3/(12*E*stiel.I)        #anders in schriftlicher Ausarbeitung? und ^-1 fehlt
     d2=(h/sp)**2*(sp-d_c)**3/(12*E*riegel.I)
     
     d3=(h-d_b)/(G*stiel.A/2*5/6)            # Schubfläche = Halbe Querschnittsfläche * Schubkorrektiurfaktor 5/6
-    d4=(h/sp)**2*(sp-d_c)/(G*riegel.A*2/3*5/6)    # Stegfläche ist 2/3 der Gesamtfläche, nicht 1/2 da Hohlprofil
+    d4=(h/sp)**2*(sp-d_c)/(G*riegel.A*2/3*5/6)    # Stegfläche ist 2/3 der Gesamtfläche, nicht 1/2 da rechteckiges Hohlprofil
 
-    G_w=(h/stiel.A)/(d1+d2+d3+d4)
+    G_w=(h/stiel.A)/(d1+d2+d3+d4)#**-1?
 
+    #Shear lag Parameter
     h_total=buildingProp.h_total
     a=buildingProp.b_total/2
     
-    m_w=(G_w*h_total**2)/(E*a**2)
+    m_w=(G_w*h_total**2)/(E*a**2)       #Schubsteifigkeitsparameter für shear lag
 
     alpha_1=(2.57*m_w+1.12)/(m_w**2+2.94*m_w+0.64)      # Gleichmäßig verteilte Last nach Kwon
     alpha_2=(0.03*m_w+1.12)/(m_w**2+2.94*m_w+0.64)
@@ -138,7 +139,7 @@ def calcInteriaMoment(buildingProp,materialProp,s,stiel,t_stiel):
 
     tube_wirksam=k/(4/3)*100        # Wirksamkeit der Tube in Prozent
     #print('alpha=',alpha,'beta=',beta)
-    t= stiel.A/sp
+    t= stiel.A/sp       #wirksame Wandungsdicke der Röhre
     
     I=4*t*a**3*k
 
@@ -159,7 +160,7 @@ def buildingStiffness(buildingProp,materialProp,riegel,stiel,element3,element4):
 
     for i in range (0,len(riegel.t)):
         
-        if i==(len(riegel.t)-1):
+        if i==(len(riegel.t)-1):    #Abschnitt ganz unten
             s=buildingProp.n       # s für Stelle an der berechnet wird
         
         else: 
@@ -190,7 +191,7 @@ def buildingStiffness(buildingProp,materialProp,riegel,stiel,element3,element4):
 
         # GA_i=(GA_riegel**-1+GA_stiel**-1+GA_riegel2**-1+GA_stiel2**-1)**-1
 
-        GA_i=G_w*buildingProp.b_total*t*2       # G*Stegfläche
+        GA_i=G_w*buildingProp.b_total*t*2       # G*Stegfläche, t=wirksame Wandungsdicke von äquivalentem Hohlkasten
         GA.append(GA_i)
     
     buildingProp.I=I
@@ -205,10 +206,10 @@ def shearStiffnessModification (buildingProp,riegel,stiel,element3,element4,delt
     d3=buildingProp.tube_d3
     d4=buildingProp.tube_d4
     
-    if d4 == max(d1,d2,d3,d4) or d2 == max(d1,d2,d3,d4):  # Limitierendes Profil wird verstärkt
+    if d4 == max(d1,d2,d3,d4) or d2 == max(d1,d2,d3,d4):  # Limitierendes Profil wird verstärkt bei Riegeln
         riegel.t= [element+delta_t for element in riegel.t]
 
-    else:
+    else:   # Limitierendes Profil wird verstärkt bei Stielen
         stiel.t= [element+delta_t for element in stiel.t]
 
 
@@ -223,9 +224,9 @@ def interiaMomentModification (buildingProp,t_riegel,t_stiel,delta_t):
     d2=buildingProp.tube_d2
     d3=buildingProp.tube_d3
     d4=buildingProp.tube_d4
-    tube_wirksam=buildingProp.tube_wirksam
+    tube_wirksam=buildingProp.tube_wirksam  #Wirksamkeit in %
     
-    if tube_wirksam < buildingProp.tube_wirksam_min:      # G_w erhöhen damit Shear-Lag rduziert
+    if tube_wirksam < buildingProp.tube_wirksam_min:      # G_w erhöhen damit Shear-Lag reduziert
         if d4 == max(d1,d2,d3,d4) or d2 == max(d1,d2,d3,d4):  # Limitierendes Profil wird verstärkt
             t_riegel=t_riegel+delta_t
 
@@ -233,7 +234,7 @@ def interiaMomentModification (buildingProp,t_riegel,t_stiel,delta_t):
             t_stiel=t_stiel+delta_t
 
     else:
-        t_stiel=t_stiel+delta_t
+        t_stiel=t_stiel+delta_t 
 
     return t_riegel, t_stiel
 
@@ -246,7 +247,7 @@ def design(buildingProp,loads,materialProp):
     A_stiele=buildingProp.b_total**2-(buildingProp.b_total-b_raster)**2
     n_stiele=buildingProp.n_stiele
     
-    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil')
+    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil')    # Einzugsfläche, Fassadenlänge, Typ, Profil
     stiel=building.elements(A_stiele/(16*n_stiele),b_raster/n_stiele,'Stiel','Quadratisches Hohlprofil')
     innenStütze=building.elements(A,0,'Stütze','Quadratisches Hohlprofil')
 

@@ -39,10 +39,11 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         M_max=0
         M_kombi=0
         
+        #Geometrie der Diagonale, a bestimmt das Geschoss (von oben) des Kreuzungspunkts der Diagonalen
         a=min(int(s/8+7/8)*8-4,n)    # Dadurch wird immer bis zu nächsten 8er Stufe aufgerundet, aber maximal bis zur Gesamtgeschossanzahl
-        h=h_geschoss*8
+        h=h_geschoss*8                 #Diagonalen gehen über acht Geschosse
         b=b_total
-        d=(h**2+b**2)**0.5
+        d=(h**2+b**2)**0.5              #Länge der Diagonalen
 
         N_max=gamma_w*V[a]*d/b/4        # 4 Diagonalen tragen Last ab
         N_kombi=0
@@ -75,7 +76,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
             i=int(s/n_abschnitt-1)
 
         a=min(int(s/4+3/4)*4,n)    # Dadurch wird immer bis zu nächsten 4er Stufe aufgerundet, aber maximal bis zur Gesamtgeschossanzahl
-        F=gamma_w*M[a]/(b_total*5)          # Kraft aus Kräftepaar aus Moment
+        F=gamma_w*M[a]/(b_total*5)          # Kraft aus Kräftepaar aus Moment, /5, da es 5 Stützen nebeneinander auf der Seite gibt die senkrehct zum Wind ist
 
         N_max= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha)+l_fassade*gd_fassade)*s+F+2/5*buildingProp.G_diagonale[i]*gamma_g+3/8*buildingProp.G_querstrebe[i]*gamma_g
         N_kombi= 0
@@ -96,7 +97,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         a=min(int(s/4+3/4)*4,n)    # Dadurch wird immer bis zu nächsten 4er Stufe aufgerundet, aber maximal bis zur Gesamtgeschossanzahl
         F=0                        # Kraft aus Kräftepaar aus Moment
 
-        N_max= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha)+l_fassade*gd_fassade)*s+F
+        N_max= Ng_darüberliegend+Ng+(A_einzug*(Gd+Qd*alpha)+l_fassade*gd_fassade)*s+F   #Sollte hier nicht das EG Diagonale/Querstrebe auch angerechnet werden
         N_kombi= 0
 
     if element.typ=='Querstrebe':
@@ -104,7 +105,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
         M_kombi=0
         a=min(int(s/4+3/4)*4,n)
 
-        N_max=gamma_w*(M[a]-M[a-4])/(b_total*5)*b_total/(h_geschoss*8)
+        N_max=gamma_w*(M[a]-M[a-4])/(b_total*5)*b_total/(h_geschoss*8)      #gamma*Momentendifferenz/(Breite*5 Stützen)*Diagonalneigung
         N_kombi=0
 
     return N_max,N_kombi,M_max,M_kombi
@@ -119,13 +120,13 @@ def buildingStiffness(buildingProp,materialProp,diagonale,außenStützen,element
         calculations.calcProfileProp(außenStützen,buildingProp,materialProp,außenStützen.t[i])
         calculations.calcProfileProp(diagonale,buildingProp,materialProp,diagonale.t[i])
             
-        I_i=10*außenStützen.A*(buildingProp.b_raster*2)**2+4*außenStützen.A*(buildingProp.b_raster)**2#+16*außenStützen.I     # Steiner Anteil der Randstützen
+        I_i=10*außenStützen.A*(buildingProp.b_raster*2)**2+4*außenStützen.A*(buildingProp.b_raster)**2#+16*außenStützen.I     # Steiner Anteil der Randstützen, I vernachlässigt wegen geringem Einfluss?
         I.append(I_i)
 
         h=buildingProp.h_geschoss*8
         b=buildingProp.b_total
         d=(h**2+b**2)**0.5
-        GA_i=4*materialProp.E*h*b**2*diagonale.A/d**3       # Schubsteifigkeit 2er Fachwerke nach Kaviani et al.
+        GA_i=4*materialProp.E*h*b**2*diagonale.A/d**3       # Schubsteifigkeit 2er Fachwerke nach Kaviani et al. S.404, in Ausarbeitung/ Quelle 2*?
         GA.append(GA_i)
     
     buildingProp.I=I
@@ -159,17 +160,17 @@ def design(buildingProp,loads,materialProp):
     calculations.calcElementWidth(außenStützeOhnePFH,buildingProp,loads,materialProp,str_)
     calculations.calcElementWidth(diagonale, buildingProp, loads, materialProp, str_)
     calculations.calcElementWidth(querstrebe,buildingProp,loads,materialProp,str_)
-
+    #Berechnung EG Diagonale und Querstrebe für Dimensionierung Außenstützen
     calculations.calcWeight(buildingProp,materialProp,diagonale)
     h=buildingProp.h_geschoss*8
     b=buildingProp.b_total
     d=(h**2+b**2)**0.5
-    diagonale.G=[element*d/b for element in diagonale.G]
+    diagonale.G=[element*d/b for element in diagonale.G]    #Wieso /b? Eher /(h_geschoss*n_abschnitt), da das in calcWeight gerechnet wird
 
     buildingProp.G_diagonale=diagonale.G
 
     calculations.calcWeight(buildingProp,materialProp,querstrebe)
-    x=2*b_raster/(4*buildingProp.h_geschoss)                                    # Alle 4 Geschosse gibt es eine Querstrebe mit l=2*b_raster
+    x=2*b_raster/(4*buildingProp.h_geschoss)            # Alle 4 Geschosse gibt es eine Querstrebe mit l=2*b_raster
     querstrebe.G=[element*x for element in querstrebe.G]
     
     buildingProp.G_querstrebe=querstrebe.G
@@ -193,6 +194,7 @@ def design(buildingProp,loads,materialProp):
     calculations.calcWeight(buildingProp,materialProp,innenStütze)
     calculations.calcWeight(buildingProp,materialProp,außenStützeOhnePFH)
     
+    #doppelt sich, da eventuell Vergößerung durch Verformunsgnachweise
     calculations.calcWeight(buildingProp,materialProp,diagonale)
     diagonale.G=[element*d/b for element in diagonale.G]
 
@@ -200,7 +202,7 @@ def design(buildingProp,loads,materialProp):
     
     buildingProp.G_innenStützen=[element*9 for element in innenStütze.G]
     buildingProp.G_außenStützen=[element*16 for element in außenStütze.G]
-    buildingProp.G_diagonalen=[element *8 for element in diagonale.G]
+    buildingProp.G_diagonalen=[element *8 for element in diagonale.G]#8x in einem Abschnitt
     buildingProp.G_querstreben=[element*4 for element in querstrebe.G]
     
     buildingProp.G_aussteifung=[]

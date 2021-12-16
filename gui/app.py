@@ -5,6 +5,10 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-23      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:      https://www.ilek.uni-stuttgart.de/
 # ------------------------------------------------------------------------------
@@ -12,7 +16,7 @@
 # PyQt5 gui
 from matplotlib.pyplot import vlines, xlim, ylim
 from numpy.lib.function_base import append
-from premiumForHeight.pfh.building import buildingProp, loads, materialProp
+from Masterarbeit.pfh.building import buildingProp, loads, materialProp
 from PyQt5 import QtWidgets, uic
 from gui.mainWindow import Ui_MainWindow
 
@@ -22,11 +26,11 @@ import os
 import numpy
 
 # pyLEK/helpers
-import plotters.plot2D as plt
-from sampleCode.gui.pdHelpers import readDataframe
-from sampleCode.gui.pdHelpers import getAvailStrengthClasses
-from sampleCode.gui.pdHelpers import getAvailMaterials
-from sampleCode.gui.pdHelpers import getMaterialProperties
+import pyLEK.plotters.plot2D as plt
+from pyLEK.sampleCode.gui.pdHelpers import readDataframe
+from pyLEK.sampleCode.gui.pdHelpers import getAvailStrengthClasses
+from pyLEK.sampleCode.gui.pdHelpers import getAvailMaterials
+from pyLEK.sampleCode.gui.pdHelpers import getMaterialProperties
 
 from pfh import building
 from pfh import str_core
@@ -57,44 +61,50 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Abschnitt Multiberechnung
         self.gui.comboBox_parameter.currentTextChanged.connect(self.fitUnits)
 
-        # Abschnitt Gebäudegeometrie
-        self.gui.spinBox_h_geschoss.valueChanged.connect(self.calcTotalBuildingHeight)
-        self.gui.spinBox_n.valueChanged.connect(self.calcTotalBuildingHeight)
+        # Abschnitt Gebäudegeometrie (Zusammenhänge des Tabs)
+        self.gui.spinBox_h_geschoss.valueChanged.connect(self.calcTotalBuildingHeight) #aktualisiert die Gesamthöhe bei Änderung der Geschosshöhe
+        self.gui.spinBox_n.valueChanged.connect(self.calcTotalBuildingHeight) #aktualisiert die Gesamthöhe bei Änderung der Geschossanzahl
 
-        self.gui.spinBox_b_raster.valueChanged.connect(self.calcTotalBuildingWidth)
+        self.gui.spinBox_b_raster.valueChanged.connect(self.calcTotalBuildingWidth) #aktualisiert die Gesamtbreite bei Änderung des Stützenabstands
 
-        self.gui.spinBox_h_total.valueChanged.connect(self.calcBuildingSlenderness)
-        self.gui.spinBox_b_total.valueChanged.connect(self.calcBuildingSlenderness)
+        self.gui.spinBox_h_total.valueChanged.connect(self.calcBuildingSlenderness) #aktualisiert Schlankheit bei Änderung der Gesamthöhe
+        self.gui.spinBox_b_total.valueChanged.connect(self.calcBuildingSlenderness) #aktualisiert Schlankheit bei Änderung der Gesamtbreite
 
-        self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateStielanzahl)
+        self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateStielanzahl) #aktualisiert Anzahl Stiele pro Raster bei Änderung des Tragwerks
+        self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateOutriggeranzahl)    #aktualisiert Anzahl Outrigger bei Änderung des Tragwerks
+        self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateOutriggerVerhaeltnisse)
 
         # Abschnitt Vertikallasten
+        # Aktualisierung der Designlast bei Änderungen der charakteristischen Teillasten
+        #Eigengewicht
         self.gui.spinBox_gk1.valueChanged.connect(self.calcDesignLoadG)
         self.gui.spinBox_gk2.valueChanged.connect(self.calcDesignLoadG)
         self.gui.spinBox_gamma_g.valueChanged.connect(self.calcDesignLoadG)
 
+        #Fassade
         self.gui.spinBox_gk_fassade.valueChanged.connect(self.calcDesignLoadFassade)
         self.gui.spinBox_gamma_g.valueChanged.connect(self.calcDesignLoadFassade)
 
+        #Nutzlast
         self.gui.spinBox_qk.valueChanged.connect(self.calcDesignLoadQ)
         self.gui.spinBox_gamma_q.valueChanged.connect(self.calcDesignLoadQ)
         
         # Abschnitt Horizontallasten
-        self.gui.spinBox_GK.valueChanged.connect(self.setExponent)
+        self.gui.spinBox_GK.valueChanged.connect(self.setExponent) #akualisiert Profilexponent bei Änderung Geländekategorie
 
-        self.gui.spinBox_cf0.valueChanged.connect(self.calcCF)
+        self.gui.spinBox_cf0.valueChanged.connect(self.calcCF) #akt. c_f bei Änderung c_f,0
         self.gui.spinBox_psi_r.valueChanged.connect(self.calcCF)
         self.gui.spinBox_psi_lambda.valueChanged.connect(self.calcCF)
 
-        self.gui.spinBox_qb_k.valueChanged.connect(self.calcWindLoad10)
+        self.gui.spinBox_qb_k.valueChanged.connect(self.calcWindLoad10) #Aktualisierung der charakteristischen Windlast auf 10m  Höhe
         self.gui.spinBox_cscd.valueChanged.connect(self.calcWindLoad10)
         self.gui.spinBox_cf.valueChanged.connect(self.calcWindLoad10)
         self.gui.spinBox_GK.valueChanged.connect(self.calcWindLoad10)
 
-        self.gui.spinBox_wk.valueChanged.connect(self.calcWindLoad10Design)
+        self.gui.spinBox_wk.valueChanged.connect(self.calcWindLoad10Design) #Aktualisierung Designwert Windlast
         self.gui.spinBox_gamma_w.valueChanged.connect(self.calcWindLoad10Design)
 
-        # Zum berechnen: Push button
+        # Zum berechnen: Push button zum Starten
         self.gui.pushButton_einzelberechnung.clicked.connect(lambda: self.pushButton_einzelberechnung(buildingProp,materialProp,loads))
         self.gui.pushButton_multiberechnung.clicked.connect(lambda: self.pushButton_multiberechnung(buildingProp,materialProp,loads))
         self.gui.pushButton_multiberechnungParameter.clicked.connect(lambda: self.pushButton_multiberechnungParameter(buildingProp,materialProp,loads))
@@ -191,7 +201,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         qtHelpers.guiRestoreState(self.gui)
 
 
-    # Materialeigenschaften mittels Dropdown auswahl:
+    # Materialeigenschaften mittels Dropdownauswahl:
 
     def addMaterials(self):
         # Import from pdHelpers
@@ -237,10 +247,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.spinBox_G.setValue(matProperties["G-Modul"])
         self.gui.spinBox_gamma.setValue(matProperties["Wichte"]/10)
 
-
-    # Automatische Berechnungen der Angaben im Fenster:
+    #-------------------------------------------------------------------------------------------------------------------------------------------------
+    # Automatische Berechnungen der Angaben im Fenster (benötigte Funktionen):
     
-    # Multiberechnung:
+    # Multiberechnung (verschiedene Parametervariationen je nach Thematik):
     def fitUnits(self):
         parameter=self.gui.comboBox_parameter.currentText()
 
@@ -257,11 +267,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.gui.spinBox_p_max.setMinimum(1)
 
         else:
-            self.gui.spinBox_p_min.setMinimum(0)
+            self.gui.spinBox_p_min.setMinimum(0) #keine Variation der Staffelung
             self.gui.spinBox_p_max.setMinimum(0)
 
         if parameter == 'Deckengewicht g_k1':
-            label='[kN/m²]'
+            label='[kN/m²]' #fügt die Einheit hinter Eingabebereich hinzu
 
         if parameter == 'Windlast q_b':
             label='[kN/m²]'
@@ -275,14 +285,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             label='[%]'
         
+        #  TODO: Add Outrigger Anzahl/Anordnung
+        
+
         self.gui.label_p_min.setText(label)
         self.gui.label_p_max.setText(label)
 
-    # Geometrie
+    # Geometrie         Funktionen für Geometrieberechnung
 
     def calcTotalBuildingHeight(self):
         """Calculates the total building height
-        """
+        """                                     #Mehrzeiliger String
         n = self.gui.spinBox_n.value()
         h_geschoss = self.gui.spinBox_h_geschoss.value()
         h_total = n * h_geschoss
@@ -292,7 +305,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """Calculates the total building height
         """
         b_raster = self.gui.spinBox_b_raster.value()
-        b_total = 4 * b_raster
+        b_total = 4 * b_raster                  #Stützenraster 5x5, also 4 Felder mit b_raster
         self.gui.spinBox_b_total.setValue(b_total)
 
     def calcBuildingSlenderness(self):
@@ -300,7 +313,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         h_total = self.gui.spinBox_h_total.value()
         b_total = self.gui.spinBox_b_total.value()
-        if b_total==0:
+        if b_total==0:              #damit nicht /0
             lambda_slenderness=0
         else:    
             lambda_slenderness = h_total / b_total
@@ -314,6 +327,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.gui.spinBox_n_stiele.setEnabled(False)
             self.gui.spinBox_n_stiele.setValue(1)
+
+    def activateOutriggeranzahl (self):
+        ''''Aktiviert Outriggeranzahl für Outriggersystem'''
+        if self.gui.comboBox_tragwerk.currentText() == 'Outrigger':
+            self.gui.spinBox_n_outrigger.setEnabled(True)
+        else:
+            self.gui.spinBox_n_outrigger.setEnabled(False)
+            self.gui.spinBox_n_outrigger.setValue(1)
+
+    def activateOutriggerVerhaeltnisse(self):
+        if self.gui.comboBox_tragwerk.currentText() == 'Outrigger':
+            self.gui.spinBox_alpha_outrigger.setEnabled(True)
+            self.gui.spinBox_beta_outrigger.setEnabled(True)
+        else:
+            self.gui.spinBox_alpha_outrigger.setEnabled(False)
+            self.gui.spinBox_beta_outrigger.setEnabled(False)
+            self.gui.spinBox_alpha_outrigger.setValue(3)
+            self.gui.spinBox_beta_outrigger.setValue(4)
 
     # Vertikallasten
 
@@ -344,28 +375,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Horizontallasten
 
-    def setExponent(self):
+    def setExponent(self): #Profilexponent 
         """Sets the Exponent
         """
         GK = self.gui.spinBox_GK.value()
         if GK == 0:
-            exp=1
+            exp=1   
         
-        if GK ==1:
-            exp=0.19
-
-        if GK ==2:
+        if GK == 1:
+            exp=0.19            #aus Böengeschwindigkeitsdruck (EC1-1-4 Tab Na B.2)
+        
+        if GK == 2:
             exp=0.24
 
-        if GK ==3:
+        if GK == 3:
             exp=0.31
 
-        if GK ==4:
+        if GK == 4:
             exp=0.4
 
         self.gui.spinBox_exp.setValue(exp)
 
-    def calcCF(self):
+    def calcCF(self):               #Verbessern durch implementieren der Beiwerte nach Norm, im Moment händische Eingabe, Schneider 8.2.1
         """Calculates the "Kraftbeiwert"
         """
         c_f0= self.gui.spinBox_cf0.value()
@@ -381,7 +412,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         cscd = self.gui.spinBox_cscd.value()
         q_b = self.gui.spinBox_qb_k.value()
 
-        GK = self.gui.spinBox_GK.value()
+        GK = self.gui.spinBox_GK.value()        #x-Werte nach EC1 NA Tabelle NA.B.2
         if GK == 0:
             x=1
         
@@ -397,10 +428,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if GK ==4:
             x=1.1
 
-        w_k = cscd*c_f*x*q_b
+        w_k = cscd*c_f*x*q_b    #EC1 5.3 z_e = 10m vereinfacht erstmal
         self.gui.spinBox_wk.setValue(w_k)
 
-    def calcWindLoad10Design(self):
+    def calcWindLoad10Design(self):     #Für Anzeige w_k und w_d in GUI, dann Übergabe w_k an wk (s. building.py)
         """Calculates the design load of wk
         """
         w_k = self.gui.spinBox_wk.value()
@@ -408,7 +439,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         w_d=w_k*gamma_w
         self.gui.spinBox_wd.setValue(w_d)
 
-    # Profilausgabe:
+    # Profilausgabe (Statische Kennwerte -> Querschnitte):
 
     def showProfiles(self,buildingProp):
         self.gui.label_212_01.setText(str(buildingProp.t_innenStützen))
@@ -433,10 +464,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Die Plot2D und barChart Funktion in mplwidget.py ist schon angepasst, pieChart nicht
 
 
-    def plotMassDistribution(self,buildingProp):
+    def plotMassDistribution(self,buildingProp): #Statische Kennwerte -> Massenverteilung: Balkendiagramm
 
         # X-Achse:
-        x1='Aussteifungselement'
+        x1='Aussteifungselement'    
 
         if buildingProp.tragwerk == 'Kerntragwerk':
             x1='Kern'
@@ -488,7 +519,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 annotations=annotations, annotations_position=annotations_position, xlim=xlim, ylim=ylim, dir_fileName=dir_fileName, vLines=None, savePlt=savePlt, saveTex=saveTex)
     
 
-    def plotStiffnessDistribution(self,buildingProp,materialProp):
+    def plotStiffnessDistribution(self,buildingProp,materialProp):      #Statische Kennwerte -> Steifigkeitsverteilung: Kurvendiagramm
 
         # Y-Achse:
         y=[]
@@ -514,7 +545,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # X-Achse:
         x=[]
         if self.gui.comboBox_xAxis_231.currentText() == 'Biegesteifigkeit':
-            x = 2*[i * materialProp.E/1000 for i in buildingProp.I]
+            x = 2*[i * materialProp.E/1000 for i in buildingProp.I] #Wieso 2x: um die Werte zu verdoppeln, da Plot alle Werte doppelt braucht, buildingProp.I = I für jeden Abschnitt über die Höhe aus berechnetem Querschnitt
             #x.append(0)
             x.sort()
             xlabel = 'Biegesteifigkeit'
@@ -551,7 +582,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Y-Achse:
         if self.gui.comboBox_yAxis_242.currentText() == 'Gebäudehöhe':
-            y=numpy.arange(buildingProp.h_total,-buildingProp.h_geschoss,-buildingProp.h_geschoss)
+            y=numpy.arange(buildingProp.h_total,-buildingProp.h_geschoss,-buildingProp.h_geschoss)  #generiert  ndarray mit Staffelung über Gebäudehöhe, beginnt oben
             ylabel = 'Höhe [m]'
             
         if self.gui.comboBox_yAxis_242.currentText() == 'Anzahl Stockwerke':
@@ -598,9 +629,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # X-Achse:
         if self.gui.comboBox_xAxis_251.currentText() == 'Verformungen':
             x1=[]
-            for i in range (0, len(buildingProp.w_EI)):
+            for i in range (0, len(buildingProp.w_EI)): 
                 x1.append((buildingProp.w_EI[i]+buildingProp.w_GA[i])*1000)
-            x2=[w_EI *1000 for w_EI in buildingProp.w_EI]
+            x2=[w_EI *1000 for w_EI in buildingProp.w_EI]   #mm, da m*1000
             x3=[w_GA *1000 for w_GA in buildingProp.w_GA]
 
             xlabel = 'Verformung [mm]'
@@ -1121,6 +1152,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel='w_{EI}/w_{GA}'
         if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             xlabel='Zielwert tube_{wirksam}'
+        # TODO: Add Outrigger
         
         # Legende:
         legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
@@ -1169,6 +1201,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             ylabel='w_{EI}/w_{GA}'
         if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             ylabel='Zielwert tube_{wirksam}'
+        
+        # TODO: Add Outrigger
         
         # X-Achse:
         if self.gui.comboBox_xAxis_421.currentText() == 'Gebäudehöhe':
@@ -1421,7 +1455,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.MplWidget_450.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
                                       legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
     
-
+    #------------------------------------------------------------------------------------------
     # Berechnungen:
 
     def mainCalculation(self,buildingProp,loads,materialProp):
@@ -1480,10 +1514,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         n_min=self.gui.spinBox_n_min.value()
         n_max=self.gui.spinBox_n_max.value()
         varianten_n=self.gui.spinBox_varianten_n.value()
-        delta_n=(n_max-n_min)/(varianten_n-1)
+        delta_n=(n_max-n_min)/(varianten_n-1)       #Delta zum Erhöhen zwischen Iterationsschritten
         
         #n_0=buildingProp.n
-        verhältnis_hw=self.gui.spinBox_w_max.value() 
+        verhältnis_hw=self.gui.spinBox_w_max.value() #Maximale Verformung Verhältnis zu Höhe
 
         buildingProp.multi_n=[]
         buildingProp.multi_h_total=[]
@@ -1519,21 +1553,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # Verändern von n und den zugehörigen Variablen
             buildingProp.n=(int(n_max-i*delta_n))
             buildingProp.n_abschnitt = int(min(self.gui.spinBox_n_abschnitt.value(),buildingProp.n))
-            buildingProp.multi_n.append(buildingProp.n)
+            buildingProp.multi_n.append(buildingProp.n) #Liste der untersuchten Stockwersanzahlen
             buildingProp.h_total=buildingProp.h_geschoss*buildingProp.n
             buildingProp.multi_h_total.append(buildingProp.h_total)
             buildingProp.schlankheit=buildingProp.h_total/buildingProp.b_total
             buildingProp.multi_schlankheit.append(buildingProp.schlankheit)
-            buildingProp.multi_A.append((buildingProp.b_raster*4)**2*buildingProp.n)
+            buildingProp.multi_A.append((buildingProp.b_raster*4)**2*buildingProp.n)    #Geschossfläche*Geschossanzahl=Gesamtgebäudefläche
 
-            buildingProp.x=int(buildingProp.n/buildingProp.n_abschnitt)
-            loads.w_max=buildingProp.h_total/verhältnis_hw
+            buildingProp.x=int(buildingProp.n/buildingProp.n_abschnitt)    #Anzahl der Abschnitte bei aktueller Gebäudehöhe
+            loads.w_max=buildingProp.h_total/verhältnis_hw      #max. Verformung
 
             print('-------',buildingProp.n,'-------')
 
             self.mainCalculation(buildingProp,loads,materialProp)
 
-            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1])
+            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1]) #Übernahme des Werts an Fußpunkt des Gebäudes (Summe des Gesamten), g=Maße
             buildingProp.multi_G_außenStützen.append(buildingProp.G_außenStützen[-1])
             buildingProp.multi_G_innenStützen.append(buildingProp.G_innenStützen[-1])
             buildingProp.multi_G_total.append(buildingProp.G_total[-1])
@@ -1547,7 +1581,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             buildingProp.multi_eigenFrequenz.append(buildingProp.eigenFrequenz)
 
-            if self.gui.comboBox_parameter.currentText()!='Keiner':
+            if self.gui.comboBox_parameter.currentText()!='Keiner':     #keine Parametervariation
                 self.multiberechnungParameter(buildingProp,materialProp,loads)
 
                 index=buildingProp.multiPar_G_total.index(min(buildingProp.multiPar_G_total))
@@ -1571,7 +1605,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 buildingProp.multi_p_opt_min.append(buildingProp.multi_p[index2])
                 
 
-            self.gui.progressBar.setValue(20+30*i/varianten_n)
+            self.gui.progressBar.setValue(20+30*int(i/varianten_n))
 
         self.plotResourceAnalysis(buildingProp,materialProp)
         self.gui.progressBar.setValue(55)
@@ -1593,7 +1627,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.progressBar.setValue(100)
 
 
-    def pushButton_multiberechnungParameter(self,buildingProp,materialProp,loads):
+    def pushButton_multiberechnungParameter(self,buildingProp,materialProp,loads):  #Parametervariation
         self.gui.progressBar.setValue(10)
 
         self.submit_buildingProp(buildingProp)
@@ -1662,6 +1696,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
                 buildingProp.tube_wirksam_min=buildingProp.p
+
+            #   TODO: Add Outrigger
             
             buildingProp.multi_p.append(buildingProp.p)
             
@@ -1693,7 +1729,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         buildingProp.tragwerk=self.gui.comboBox_tragwerk.currentText()
         buildingProp.n_stiele=self.gui.spinBox_n_stiele.value()
         buildingProp.tube_wirksam_min=self.gui.spinBox_tube_wirksam.value()
-        
+        buildingProp.n_outrigger=self.gui.spinBox_n_outrigger.value()
+        buildingProp.alpha_outrigger=self.gui.spinBox_alpha_outrigger.value()
+        buildingProp.beta_outrigger=self.gui.spinBox_beta_outrigger.value()
+
         if buildingProp.n_abschnitt > buildingProp.n:     # n_abschnitt kann maximal so groß sein wie n
             buildingProp.n_abschnitt = buildingProp.n
         
@@ -1731,13 +1770,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def submit_materialProp(self,materialProp):
         '''Übergibt Materialkennwerte'''
+        #Eingangsparameter Material und Profil
 
         materialProp.f = 1000*self.gui.spinBox_f.value() # N/mm² -> kN/m²
         materialProp.E = 1000*self.gui.spinBox_E.value() # N/mm² -> kN/m²
         materialProp.G = 1000*self.gui.spinBox_G.value() # N/mm² -> kN/m²      
         materialProp.gamma = self.gui.spinBox_gamma.value()
         materialProp.t_min = self.gui.spinBox_tmin.value()
-        materialProp.delta_t = self.gui.spinBox_delta_t.value()
+        materialProp.delta_t = self.gui.spinBox_delta_t.value() #Schrittweite Querschnittserhöhung
         materialProp.verhältnis_td = 1/self.gui.spinBox_verhaeltnis_td.value()
         materialProp.minderung_A = self.gui.spinBox_minderung_A.value()/100    # [%] -> [-]
         materialProp.minderung_I = self.gui.spinBox_minderung_I.value()/100    # [%] -> [-]
@@ -1749,7 +1789,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #print (materialProp.gamma)
 
-
+#----------------------------------------------------------------------------------------------------------
 def start():
     """Starting the application
     """

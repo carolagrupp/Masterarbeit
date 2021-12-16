@@ -5,6 +5,10 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-09      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:
 # ------------------------------------------------------------------------------
@@ -21,6 +25,9 @@ class buildingProp():
         self.n_abschnitt=0
         self.h_total=0
         self.h_geschoss=1
+        self.posOut=[]
+        self.z=0        #Anzahl Iterationen Tragfähigkeitsnachweis
+
         
         self.I=[]
         self.GA=[]
@@ -31,6 +38,7 @@ class buildingProp():
         self.G_aussteifung=[0]
         self.G_total=[0]
         self.G_decken=0
+        self.K = []             #Liste Federsteifigkeiten Outrigger
 
         self.multi_n=[]
         self.multi_h_total=[]
@@ -114,9 +122,9 @@ class loads():
         self.F_p=[] #[kN]
 
         # Abweichende Verläufe/Parameter je nach Geländekategorie
-        
+        #EC1-1-4 NA Tab. NA B.2 z_min, a, b, c, d: aus Integration von qp(z)*btotal, so ergibt sich V aus einer Integration und M aus der erneuten Integration von V
         if GK==1:
-            a=0.644143/2.6          # Der Faktor 2.6 ist bereits in wk eingerechnet
+            a=0.644143/2.6          # Der Faktor 2.6 ist bereits in wk eingerechnet s. app.py Z.408 w_k
             b=1.410673/2.6
             c=0.766530/2.6
             exp=1.19
@@ -155,17 +163,19 @@ class loads():
             z_min=0
             d=1
 
+        # Berücksichtigung von Belastung z<zmin? Eher rausstreichen, da nicht relevant
         M_zmin=wk*b_total*a*z_min**(exp+1)-wk*b_total*b*h**exp*z_min+wk*b_total*c*h**(exp+1)
         V_zmin=wk*b_total*b*z_min**exp-wk*b_total*b*h**exp
 
         # Momente auf Höhe der Geschosse
         for i in range(0,n+1):
-            z=h-i*h_geschoss
+            z=h-i*h_geschoss #Höhe von unten
             
             if z < z_min:
                 M_i=1/2*wk*b_total*d*(z-z_min)**2+V_zmin*(z-z_min)+M_zmin
             else:
                 M_i=wk*b_total*a*z**(exp+1)-wk*b_total*b*h**exp*z+wk*b_total*c*h**(exp+1)
+            
 
             self.M.append(M_i)
             #self.M.append(0)
@@ -210,7 +220,7 @@ class materialProp():
 class elements():
     def __init__(self,A_einzug,l_fassade,typ,profil):
         # Werte werden nur zur Übersicht hier angegeben
-        self.A_einzug=A_einzug #[m²]
+        self.A_einzug=A_einzug #[m²]        #Eingabe in str_.design
         self.l_fassade=l_fassade #[m]
         self.typ=typ
         self.profil=profil

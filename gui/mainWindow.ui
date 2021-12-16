@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>814</width>
-    <height>969</height>
+    <width>1187</width>
+    <height>847</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,8 +29,8 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_8">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_8">
+    <item row="0" column="0">
      <widget class="QTabWidget" name="mainTabWidget">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -67,7 +67,7 @@
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget_100">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -443,6 +443,13 @@
                 </property>
                </widget>
               </item>
+              <item row="9" column="0">
+               <widget class="QLabel" name="label_24">
+                <property name="text">
+                 <string>Anzahl Outrigger</string>
+                </property>
+               </widget>
+              </item>
               <item row="6" column="2">
                <widget class="QDoubleSpinBox" name="spinBox_lambda">
                 <property name="enabled">
@@ -475,6 +482,22 @@
                 </property>
                 <property name="value">
                  <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="2">
+               <widget class="QSpinBox" name="spinBox_n_outrigger">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>4</number>
+                </property>
+                <property name="value">
+                 <number>0</number>
                 </property>
                </widget>
               </item>
@@ -729,6 +752,26 @@
                 </property>
                </widget>
               </item>
+              <item row="9" column="1">
+               <widget class="QLabel" name="label_25">
+                <property name="text">
+                 <string>n_outrigger</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="3">
+               <widget class="QLabel" name="label_26">
+                <property name="text">
+                 <string>[-]</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="3">
                <widget class="QLabel" name="label_114_02">
                 <property name="text">
@@ -809,6 +852,11 @@
                 <item>
                  <property name="text">
                   <string>Framed Tube</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Outrigger</string>
                  </property>
                 </item>
                </widget>
@@ -2166,194 +2214,261 @@
            <attribute name="title">
             <string>Grenzwerte</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <layout class="QGridLayout" name="gridLayout_120">
-              <property name="leftMargin">
-               <number>5</number>
+           <layout class="QGridLayout" name="gridLayout_9">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_121_08">
+              <property name="text">
+               <string>Maximale Verformung</string>
               </property>
-              <property name="topMargin">
-               <number>5</number>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_122_08">
+              <property name="text">
+               <string>w_max = h_total /</string>
               </property>
-              <property name="rightMargin">
-               <number>5</number>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
-              <property name="bottomMargin">
-               <number>5</number>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QSpinBox" name="spinBox_w_max">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
-              <property name="verticalSpacing">
-               <number>30</number>
+              <property name="minimum">
+               <number>1</number>
               </property>
-              <item row="2" column="3">
-               <widget class="QLabel" name="label_124_10">
-                <property name="text">
-                 <string>[-]</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QSpinBox" name="spinBox_maxTeta_i">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-                <property name="value">
-                 <number>400</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QLabel" name="label_124_08">
-                <property name="text">
-                 <string>[-]</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_121_08">
-                <property name="text">
-                 <string>Maximale Verformung</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="QLabel" name="label_124_09">
-                <property name="text">
-                 <string>[-]</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="label_122_10">
-                <property name="text">
-                 <string>w_EI / w_GA</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QDoubleSpinBox" name="spinBox_verhaeltnisVerformungen">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="minimum">
-                 <double>0.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>99.989999999999995</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>5.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_121_10">
-                <property name="text">
-                 <string>Verhältnis Biege- zu Schubverformung</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_121_09">
-                <property name="text">
-                 <string>Interstorydrift</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="label_122_08">
-                <property name="text">
-                 <string>w_max = h_total /</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="label_122_09">
-                <property name="text">
-                 <string>maxTeta_i = h_geschoss /</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QSpinBox" name="spinBox_w_max">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-                <property name="value">
-                 <number>500</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>Mindestwirksamkeit Framed Tube nach Shear-Lag abzug</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>tube_wirksam</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QSpinBox" name="spinBox_tube_wirksam">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="value">
-                 <number>75</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="3">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>[%]</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-             </layout>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+              <property name="value">
+               <number>500</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_124_08">
+              <property name="text">
+               <string>[-]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_121_09">
+              <property name="text">
+               <string>Interstorydrift</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_122_09">
+              <property name="text">
+               <string>maxTeta_i = h_geschoss /</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QSpinBox" name="spinBox_maxTeta_i">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+              <property name="value">
+               <number>400</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QLabel" name="label_124_09">
+              <property name="text">
+               <string>[-]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_121_10">
+              <property name="text">
+               <string>Verhältnis Biege- zu Schubverformung</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="label_122_10">
+              <property name="text">
+               <string>w_EI / w_GA</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QDoubleSpinBox" name="spinBox_verhaeltnisVerformungen">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <double>0.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>99.989999999999995</double>
+              </property>
+              <property name="singleStep">
+               <double>0.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>5.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QLabel" name="label_124_10">
+              <property name="text">
+               <string>[-]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Mindestwirksamkeit Framed Tube nach Shear-Lag abzug</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>tube_wirksam</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QSpinBox" name="spinBox_tube_wirksam">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="value">
+               <number>75</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>[%]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_121_100">
+              <property name="text">
+               <string>Verhältnis Steifigkeit Kern zu Stütze</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLabel" name="label_122_100">
+              <property name="text">
+               <string>alpha_outrigger</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QSpinBox" name="spinBox_alpha_outrigger">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>10</number>
+              </property>
+              <property name="value">
+               <number>3</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QLabel" name="label_124_100">
+              <property name="text">
+               <string>[-]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_121_101">
+              <property name="text">
+               <string>Verhältnis Steifigkeit Kern zu Outrigger</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLabel" name="label_122_101">
+              <property name="text">
+               <string>beta_outrigger</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QSpinBox" name="spinBox_beta_outrigger">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>10</number>
+              </property>
+              <property name="value">
+               <number>4</number>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="QLabel" name="label_124_101">
+              <property name="text">
+               <string>[-]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -2582,9 +2697,6 @@
                 <property name="singleStep">
                  <number>100</number>
                 </property>
-                <property name="stepType">
-                 <enum>QAbstractSpinBox::DefaultStepType</enum>
-                </property>
                 <property name="value">
                  <number>210000</number>
                 </property>
@@ -2760,9 +2872,6 @@
                 </property>
                 <property name="singleStep">
                  <number>100</number>
-                </property>
-                <property name="stepType">
-                 <enum>QAbstractSpinBox::DefaultStepType</enum>
                 </property>
                 <property name="value">
                  <number>81000</number>
@@ -4540,8 +4649,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>814</width>
-     <height>26</height>
+     <width>1187</width>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSpeichern">

@@ -5,6 +5,10 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-22      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:
 # ------------------------------------------------------------------------------
@@ -15,6 +19,7 @@ from pfh import str_core
 # ------------------------------------------------------------------------------
 
 def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t):
+    #in calculations.calcElementWidth
     h_geschoss=buildingProp.h_geschoss
     n_abschnitt=buildingProp.n_abschnitt
     n=buildingProp.n
@@ -25,7 +30,7 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
     gd_fassade=loads.gd_fassade
     Psi_w=loads.Psi_w
     Psi_q=loads.Psi_q
-    M=loads.M
+    M=loads.M       #M jeweils auf Geschosshöhe
     gamma_g=loads.gamma_g
     gamma_w=loads.gamma_w
 
@@ -34,15 +39,16 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
     A_einzug=element.A_einzug
     l_fassade=element.l_fassade
 
+    #M_max aus Wind für aktuelles Geschoss
     if element.typ=='Kern':
-        M_max=gamma_w*M[s]
+        M_max=gamma_w*M[s]          #s=Geschosszahl von oben
 
     else:
-        M_max=0    
+        M_max=0                     #Tragwerkstypen außer Kern tragen keinen Wind
 
     M_kombi=Psi_w*M_max
 
-    if  s==n and x*n_abschnitt < n:
+    if  s==n and x*n_abschnitt < n: #wenn n/n_abschnitt nicht aufgeht, unten noch mehrere Geschosse mit ni<n_abschnitt
         Ng=element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
 
     else:
@@ -55,21 +61,23 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
 
 
 def buildingStiffness(buildingProp,materialProp,kern,element2,element3,element4):
+    #wird in calculations.buildingDeflection und interstoryDrift aufgerufen
     # I und ggf. A berechnen für EI und GA
     I=[]
     GA=[]
 
-    for i in range (0,len(kern.t)):
+    for i in range (0,len(kern.t)):     #Länge = Anzahl Abschnitte, kern.t = benötigte Querschnitsdicke nach calcElementWidth
         calculations.calcProfileProp(kern, buildingProp, materialProp, kern.t[i])
             
-        I.append(kern.I)
-        GA.append(kern.A_min/2*5/6*materialProp.G)      # Halbe Kernfläche, da nur die Wände in Kraftrichtung ("Stegwände") die Schubkraft aufnehmen. Abmidnerung mit Kappa (oder näherung nach Land? nur stegfläche)
+        I.append(kern.I)    #nur ein Wert
+        GA.append(kern.A_min/2*5/6*materialProp.G)      # Halbe Kernfläche, da nur die Wände in Kraftrichtung ("Stegwände") die Schubkraft aufnehmen. Abmidnerung mit Kappa (s. Engelke S.14)
 
-    buildingProp.I=I
+    buildingProp.I=I        #Länge Anzahl Abschnitte
     buildingProp.GA=GA
    
 
 def design(buildingProp,loads,materialProp):
+    #in app.py.MainWondow.MainCalculation
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2
@@ -88,14 +96,15 @@ def design(buildingProp,loads,materialProp):
     calculations.calcElementWidth(kernOhnePFH,buildingProp,loads,materialProp,str_)
     calculations.calcElementWidth(kern,buildingProp,loads,materialProp,str_)
     
-    t0=kern.t[-1]
+    t0=kern.t[-1]       #Kerndicke ganz unten (letztes Element der Liste)
 
     # Gebäudenachweise:
     calculations.buildingDeflection(buildingProp,loads,materialProp,str_,kern)
     calculations.interstoryDrift(buildingProp,loads,materialProp,str_,kern)
     buildingProp.t_kern=kern.t
 
-    if kern.t[-1] > t0:
+    #Vergleich Tragfähigkeit und Gebäudenachweise:
+    if kern.t[-1] > t0:     
         buildingProp.NW_maßgebend='Verformung'
         print(kern.t[-1],t0)
     

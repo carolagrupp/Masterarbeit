@@ -5,6 +5,10 @@
 # Author:       st169687@stud.uni-suttgart.de
 # Created:      2021-04-04      (YYYY-MM-DD)
 # Projekt:      Premium for Height - MA Christian Engelke
+
+# Co-Author:    Carola Grupp
+# Created:      2021-11-02  
+# Projekt:      MAHS+ - MA Carola Grupp
 # ------------------------------------------------------------------------------
 # Sources:      https://realpython.com/python-main-function/
 # ------------------------------------------------------------------------------
@@ -14,6 +18,7 @@ from gui import app
 
 def main():                                         # main() should contain code that you want to run when the file is executed
     app.start()
+    
 
 if __name__ == "__main__":                          # Calling main()-function when script is excecuted     
     main()                                         

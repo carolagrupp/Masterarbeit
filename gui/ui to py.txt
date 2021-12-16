@@ -1,3 +1,4 @@
 In Pfad Leiste CMD eingeben, dort folgendes eingeben:
 
+cd Masterarbeit\gui
 pyuic5 -x mainWindow.ui -o mainWindow.py
