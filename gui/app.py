@@ -37,6 +37,7 @@ from pfh import str_core
 from pfh import str_frame
 from pfh import str_bracedtube
 from pfh import str_framedTube
+from pfh import str_outrigger
 
 # ------------------------------------------------------------------------------
 
@@ -285,7 +286,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             label='[%]'
         
-        #  TODO: Add Outrigger Anzahl/Anordnung
+        if parameter == 'Anzahl Outrigger':
+            label = '[-]'
+
+        if parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            label = '[-]'
+
+        if parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
+            label = '[-]'
         
 
         self.gui.label_p_min.setText(label)
@@ -449,7 +457,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.label_212_05.setText(str(buildingProp.t_diagonale))
         self.gui.label_212_06.setText(str(buildingProp.t_querstrebe))
         self.gui.label_212_07.setText(str(buildingProp.t_riegel))
-        self.gui.label_212_08.setText(str(buildingProp.eigenFrequenz))    
+        self.gui.label_212_08.setText(str(buildingProp.t_outrigger))
+        self.gui.label_212_10.setText(str(buildingProp.t_belt))
+        self.gui.label_212_09.setText(str(buildingProp.eigenFrequenz))    
         
     
     # Plots:
@@ -475,6 +485,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             x1='Diagonalen'
         if buildingProp.tragwerk == 'Rahmentragwerk':
             x1='Riegel' 
+        if buildingProp.tragwerk == 'Outrigger':
+            x1 ='Kern, Outrigger u. Belt'
         
         # Y-Achse:
         y1=buildingProp.G_aussteifung[-1]
@@ -547,7 +559,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.gui.comboBox_xAxis_231.currentText() == 'Biegesteifigkeit':
             x = 2*[i * materialProp.E/1000 for i in buildingProp.I] #Wieso 2x: um die Werte zu verdoppeln, da Plot alle Werte doppelt braucht, buildingProp.I = I für jeden Abschnitt über die Höhe aus berechnetem Querschnitt
             #x.append(0)
-            x.sort()
+            x.sort()    
             xlabel = 'Biegesteifigkeit'
             legend = ['EI [MNm²]']
             title = 'Biegesteifigkeitsverteilung'
@@ -559,7 +571,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel = 'Schubsteifigkeit'
             legend = ['GA [kN]']
             title = 'Schubsteifigkeitsverteilung'
-        
+
         title=None
         #mpl='plotStyle_legendeRechts'
         maxWert=max(x)
@@ -1152,7 +1164,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel='w_{EI}/w_{GA}'
         if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             xlabel='Zielwert tube_{wirksam}'
-        # TODO: Add Outrigger
+        if buildingProp.parameter == 'Anzahl Outrigger':
+            xlabel = 'n_{Outrigger}'
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            xlabel = 'alpha_outrigger'
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
+            xlabel = 'beta_outrigger'
+        
         
         # Legende:
         legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
@@ -1201,8 +1219,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             ylabel='w_{EI}/w_{GA}'
         if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
             ylabel='Zielwert tube_{wirksam}'
-        
-        # TODO: Add Outrigger
+        if buildingProp.parameter == 'Anzahl Outrigger':
+            ylabel = 'n_{Outrigger}'
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            ylabel = 'alpha_outrigger'
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
+            ylabel = 'beta_outrigger'
         
         # X-Achse:
         if self.gui.comboBox_xAxis_421.currentText() == 'Gebäudehöhe':
@@ -1475,6 +1497,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if buildingProp.tragwerk == 'Framed Tube':
             str_framedTube.design(buildingProp,loads,materialProp)
+
+        if buildingProp.tragwerk == 'Outrigger':
+            str_outrigger.design(buildingProp,loads,materialProp)
         
         building.buildingProp.calcFloorWeight(buildingProp,materialProp)
 
@@ -1670,6 +1695,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 buildingProp.p=int(p_max-i*delta_p)
                 buildingProp.n_stiele=buildingProp.p
 
+            if buildingProp.parameter == 'Anzahl Outrigger':
+                buildingProp.p = int(p_max-i*delta_p)
+                buildingProp.n_outrigger = buildingProp.p
+
             else:
                 buildingProp.p=p_max-i*delta_p
 
@@ -1697,7 +1726,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
                 buildingProp.tube_wirksam_min=buildingProp.p
 
-            #   TODO: Add Outrigger
+            if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+                buildingProp.alpha_outrigger = buildingProp.p
+
+            if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
+                buildingProp.beta_outrigger = buildingProp.p
+
             
             buildingProp.multi_p.append(buildingProp.p)
             

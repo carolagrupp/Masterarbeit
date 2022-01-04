@@ -289,3 +289,5 @@ def design(buildingProp,loads,materialProp):
     buildingProp.t_diagonale=[]
     buildingProp.t_querstrebe=[]
     buildingProp.t_riegel=riegel.t
+    buildingProp.t_outrigger = []
+    buildingProp.t_belt = []

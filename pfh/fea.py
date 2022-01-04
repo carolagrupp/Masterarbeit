@@ -18,7 +18,8 @@ import numpy as np
 from feastruct.pre.material import Material
 from feastruct.pre.section import Section
 import feastruct.fea.cases as cases
-from feastruct.fea.elements import frame2d
+import feastruct.fea.elements.frame2d as frame2d
+import feastruct.fea.fea as fea
 from feastruct.fea.frame_analysis import FrameAnalysis2D
 from feastruct.solvers.linstatic import LinearStatic
 from feastruct.solvers.naturalfrequency import NaturalFrequency
@@ -89,7 +90,7 @@ class feModel:
         self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=0, stiff=0)      #add_nodal_support in fea>cases
         self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=1, stiff=0)
         self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=5, stiff=0)
-
+        
 
         if buildingProp.tragwerk=='Outrigger':
             for j,i in enumerate(buildingProp.posOut):
@@ -148,12 +149,42 @@ class feModel:
         solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
         solver.solve()
 
-        bm = []   
-        [xis, bm] = frame2d.EulerBernoulli2D_2N.get_bmd(len(self.nodes), analysis_case = self.analysis_case)
+        beamBernoulli = frame2d.EulerBernoulli2D_2N(nodes = self.nodes, material = self.material , section = self.section)
+        fea_int = fea.FiniteElement(nodes = self.nodes, material = self.material, efs = beamBernoulli.efs)
+
+        #wie in feasolve solver.calculate_stresses(self.analysis_case)
+        for el in solver.analysis.elements:
+             # get element stiffness matrix
+            k_el = el.get_stiffness_matrix()
+
+            # get nodal displacements
+            u_el = el.get_nodal_displacements(analysis_case=self.analysis_case).reshape(-1)
+
+            # calculate internal force vector
+            f_int = np.matmul(k_el, u_el)
+
+            # find element loads
+            for element_load in self.analysis_case.load_case.element_items:
+                # if the current element has an applied element load
+                if element_load.element is el:
+                    # add nodal equivalent loads to f_int
+                    f_int += element_load.nodal_equivalent_loads()
+            el.save_fint(f=f_int, analysis_case=self.analysis_case)
+            #fea_int.save_fint(f=f_int, analysis_case=self.analysis_case)
+
+
+        
+        bm = [] 
+        #for i in range (0, len(self.nodes)):
+        [xis, bm] = beamBernoulli.get_bm(self.nodes, self.analysis_case)
+            #bm_value_max = max(abs(min(bm_value)), abs(max(bm_value)))
+            #bm.append(bm_value_max)
         #Liest es jetzt einen Wert für jede Node oder zwei? Dann eventeuell jeden zwieten löschen     
         return bm 
 
-    def calcreactions(self):
+
+
+    def calcreactions(self):    #Fkt s.bcs
          # you can easily change the solver settings
         settings = SolverSettings()
         settings.linear_static.time_info = False

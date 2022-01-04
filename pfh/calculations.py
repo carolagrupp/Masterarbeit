@@ -24,6 +24,7 @@ def calcProfileProp (element,buildingProp,materialProp,t):
     minderung_I=materialProp.minderung_I
     verhältnis_td=materialProp.verhältnis_td
     h_geschoss = buildingProp.h_geschoss
+    
 
     if element.profil=='Vollprofil':
         element.A=(t/100)*(t/100)
@@ -54,7 +55,7 @@ def calcProfileProp (element,buildingProp,materialProp,t):
         element.I=h**4/12-(h-d*2)**4/12
         element.W=element.I*2/h  
 
-    elif element.profil == 'Outrigger':
+    elif element.profil == 'Rechteckiges Vollprofil':
         h = h_geschoss
         b = t/100
         element.A = h*b
@@ -121,19 +122,22 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         alpha=min(alpha_a,alpha_n)      #Nach Norm darf nur einer der beiden Werte angewendet werden
         
         buildingProp.i_aktuell = i
+        buildingProp.ErsteBerechnungSigma = True
+
+        #if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True: #Dann t bereits vorhanden
+            #t = element.t[i-1]
+
         #Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
         while sigma > f:
             calcProfileProp(element,buildingProp,materialProp,t)        #A, I und W für aktuelles t
-            buildingProp.A_min_aktuell = element.A_min
-            buildingProp.W_aktuell = element.W
-            N_max,N_kombi,M_max,M_kombi=str_.calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t)
-            
             if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True:
                 buildingProp.outriggerAbschnitt = False
-                for k in buildingProp.posOut_abschnitte:
-                    if i == buildingProp.posOut_abschnitt[k]:
+                for k in buildingProp.posOut_abschnitt:
+                    if i == k+1:
                         buildingProp.outriggerAbschnitt = True
-
+            N_max,N_kombi,M_max,M_kombi=str_.calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t)
+            
+            
             sigma_Nmax=M_kombi/element.W+N_max/element.A_min     # Abdeckung beider Kombinationen aus den veränderlichen Lasten durch Wind und Verkehr
             sigma_Mmax=M_max/element.W+N_kombi/element.A_min
             
@@ -145,6 +149,7 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
                     
                 else:
                     t=t+a   #Erhöhen um delta_t
+                buildingProp.ErsteBerechnungSigma = False
         
         #Ng auf darunterliegendes Geschoss aus EG des Elements
         if i==x+1:
@@ -176,7 +181,7 @@ def calcShearDeformation(buildingProp,loads):
     if x*n_abschnitt<n:
         GA=buildingProp.GA[-a]
         
-        for j in range (0,n-x*n_abschnitt):
+        for j in range(0,n-x*n_abschnitt):
             w_GA_i=w_GA_i+(M[-l]-M[-(l+1)])/GA
             w_GA.insert(0,w_GA_i)
             l=l+1
@@ -271,7 +276,12 @@ def calcWeight(buildingProp, materialProp, element):
 
     for i in range (0,len(element.t)):
         calcProfileProp(element,buildingProp,materialProp,element.t[i])
-        G=G+element.A*materialProp.gamma/10*buildingProp.n_abschnitt*buildingProp.h_geschoss
+        if element.typ == 'Outrigger':
+            G=G+element.A*materialProp.gamma/10*buildingProp.b_raster
+        elif element.typ == 'Belt Truss':
+            G=G+4*element.A*materialProp.gamma/10*buildingProp.b_total
+        else:
+            G=G+element.A*materialProp.gamma/10*buildingProp.n_abschnitt*buildingProp.h_geschoss
         element.G.append (G)
 
     if buildingProp.n_abschnitt*buildingProp.x < buildingProp.n:

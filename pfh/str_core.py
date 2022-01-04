@@ -16,6 +16,7 @@
 from pfh import building
 from pfh import calculations
 from pfh import str_core
+from pfh import fea
 # ------------------------------------------------------------------------------
 
 def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t):
@@ -145,4 +146,9 @@ def design(buildingProp,loads,materialProp):
     buildingProp.t_diagonale=[]
     buildingProp.t_querstrebe=[]
     buildingProp.t_riegel=[]
+    buildingProp.t_outrigger = []
+    buildingProp.t_belt = []
+
+    #feModel = fea.feModel(buildingProp, loads, materialProp)
+    #moment = fea.feModel.calcBendingMoment(feModel)
  
