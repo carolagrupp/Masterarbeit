@@ -213,7 +213,7 @@ def shearStiffnessModification (buildingProp,riegel,stiel,element3,element4,delt
         stiel.t= [element+delta_t for element in stiel.t]
 
 
-def bendingStiffnessModification (buildingProp,riegel,stiel,element3,element4,delta_t):
+def bendingStiffnessModification (buildingProp,materialProp,riegel,stiel,element3,element4,delta_t):
 
     stiel.t= [element+delta_t for element in stiel.t]
 
@@ -239,7 +239,7 @@ def interiaMomentModification (buildingProp,t_riegel,t_stiel,delta_t):
     return t_riegel, t_stiel
 
 
-def design(buildingProp,loads,materialProp):
+def design(buildingProp,loads,materialProp,DataProp):
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2

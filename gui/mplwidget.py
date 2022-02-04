@@ -23,9 +23,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import matplotlib
 
 # pyLEK/helpers
-import plotters.plot2D as plot2D
-import plotters.plotBarChart as plotBarChart
-import plotters.plotPieChart as plotPieChart
+import pyLEK.plotters.plot2D as plot2D
+import pyLEK.plotters.plotBarChart as plotBarChart
+import pyLEK.plotters.plotPieChart as plotPieChart
 
 # ------------------------------------------------------------------------------
 # Functions / Classes

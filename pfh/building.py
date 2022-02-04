@@ -12,7 +12,8 @@
 # ------------------------------------------------------------------------------
 # Sources:
 # ------------------------------------------------------------------------------
-# Imports:      
+# Imports:
+import numpy as np
 # ------------------------------------------------------------------------------
 
 
@@ -39,6 +40,8 @@ class buildingProp():
         self.G_total=[0]
         self.G_decken=0
         self.K = []             #Liste Federsteifigkeiten Outrigger
+
+        self.D = 0
 
         self.multi_n=[]
         self.multi_h_total=[]
@@ -74,9 +77,28 @@ class buildingProp():
         self.Teta_i_EI=[0]
         self.Teta_i_GA=[0]
 
+        self.multiPar_w_EI = []
+        self.multiPar_w_GA = []
+        self.multiPar_w = []
+
+        self.multiPar_t_soll_1 = []
+        self.multiPar_t_rand_1 = []
+        self.multiPar_t_eck_1 = []     
+        self.multiPar_t_soll_2 = []    
+        self.multiPar_t_rand_2 = []
+        self.multiPar_t_eck_2 = []    
+        self.multiPar_t_soll_3 = []    
+        self.multiPar_t_rand_3 = []
+        self.multiPar_t_eck_3 = []    
+        self.multiPar_t_soll_4 = []    
+        self.multiPar_t_rand_4 = []
+        self.multiPar_t_eck_4 = []
+        
         self.multi_eigenFrequenz=[]
 
         self.i_wechselNW='none'
+
+        self.alpha_outriggerFulfilled = True
 
         # Grundriss:
         # ES   RS   RS   RS   ES
@@ -96,6 +118,8 @@ class loads():
     def __init__(self):
         self.M=[0]
         self.V=[0]
+        self.windData = False
+        self.dynamicAnalysis = False
 
         '''__init__(self,gd,qd,gd_fassade,GK,qb,Psi_q,Psi_w):
         self.gd=gd #[kN/m²]
@@ -203,6 +227,78 @@ class loads():
         self.F_p.append(0)  # am untersten Knoten soll die Kraft Null sein (geht direkt ins Lager-keine Verformung)
 
         del self.V[-1] # löscht die 0 wieder aus V
+
+    def calcvH_fs(self, buildingProp):
+        #mittlere Windgeschwindigkeit vb auf 10m Höhe mit Wiederkehrwahrscheinlichkeit von 50 Jahren (DIN 3.4)
+
+        h = buildingProp.h_total
+        if self.GK == 2:
+            v_fs = 1.00*self.v_bk*(h/10)**0.16
+        elif self.GK == 4:
+            v_fs = 0.56*self.v_bk*(h/10)**0.30
+        
+        # Get return period / probability of excedence
+        R = 50
+        p = 1 / R
+
+        # According to DIN EN 1991-1-4 / NA Abs. 4.2, Anmerkung 5
+        K = 0.1
+        n = 1
+
+        # Get probability factor (DIN EN 1991-1-4 gl 4.2)
+        cprob   = ((1 - K * np.log(-np.log(1-p))) / (1 - K * np.log(-np.log(0.98)))) ** n
+
+        # Calculate wind speeds at different return periods
+        self.vH_fs = cprob * v_fs
+
+    def grabData(self, buildingProp, DataProp, direction, schlankheit):
+
+        # Schnittkräfte aus Normberechnung löschen
+        self.M=[0]
+        self.V=[0]
+
+        if schlankheit == 8:
+            DataProp.Data = 'Force'
+            DataProp.scale_ms = 1000
+            if self.alpha_v == 0.16:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\8\\015\\time_series_1_{}.mat".format(direction)
+            elif self.alpha_v == 0.30:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\8\\027\\time_series_1_{}.mat".format(direction)
+        elif schlankheit == 4:
+            DataProp.Data = 'Pressure'
+            DataProp.scale_ms = 400
+            if self.alpha_v == 0.16:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\4\\1_6\\time_series_of_point_wind_pressure_{}.mat".format(direction)
+            elif self.alpha_v == 0.30:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\4\\1_4\\time_series_of_point_wind_pressure_{}.mat".format(direction)
+        elif schlankheit == 5:
+            DataProp.Data = 'Pressure'
+            DataProp.scale_ms = 400
+            if self.alpha_v == 0.16:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\5\\1_6\\time_series_of_point_wind_pressure_{}.mat".format(direction)
+            elif self.alpha_v == 0.30:
+                fname = "C:\\Users\\carol\\github\\Masterarbeit\\WindData\\5\\1_4\\time_series_of_point_wind_pressure_{}.mat".format(direction)
+        else:
+            raise('Wähle eine Gebäudeschlankheit von 4,5 oder 8')
+
+        # Calculate wind velocity full scale
+        self.calcvH_fs(buildingProp)
+
+        # Load wind tunnel model properties, TPU Database files
+        if DataProp.Data == 'Force':
+            DataProp.readData_F(fname, buildingProp)
+        if DataProp.Data == 'Pressure':
+            DataProp.readData_P(fname)
+
+        # Scale Data
+        DataProp.scaleData(buildingProp, self)
+
+        # Scale wind tunnel model
+        if DataProp.Data == 'Pressure':
+            DataProp.scalebuild()
+            DataProp.interpolateForces(buildingProp)
+
+
 
 
 

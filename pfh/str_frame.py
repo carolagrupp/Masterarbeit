@@ -170,14 +170,14 @@ def shearStiffnessModification (buildingProp,riegel,innenStütze,randStütze,eck
         riegel.t= [element+delta_t for element in riegel.t]
 
 
-def bendingStiffnessModification (buildingProp,riegel,innenStütze,randStütze,eckStütze,delta_t):
+def bendingStiffnessModification (buildingProp,materialProp,riegel,innenStütze,randStütze,eckStütze,delta_t):
     
     innenStütze.t= [element+delta_t for element in innenStütze.t]
     randStütze.t= [element+delta_t for element in randStütze.t]
     eckStütze.t= [element+delta_t for element in eckStütze.t]
 
 
-def design(buildingProp,loads,materialProp):
+def design(buildingProp,loads,materialProp,DataProp):
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2

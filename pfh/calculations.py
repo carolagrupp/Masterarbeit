@@ -14,6 +14,9 @@
 # ------------------------------------------------------------------------------
 # Imports:
 from pfh import fea
+#from WindData.data import DataProp
+#from pfh.building import loads
+from WindData import response
 
 # ------------------------------------------------------------------------------
 
@@ -105,13 +108,13 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
     #Äußere Schleife: Wiederholen für alle Abschnitte
     for i in range(1,z):
 
-        if i==x+1:      #nur wenn z=x+2
+        if i==x+1:      # nur wenn z=x+2
             s=n        # s für Stelle an der berechnet wird
         
-        else: #s Geschosse über aktuellem Abschnitt
+        else: # s Geschosse über aktuellem Abschnitt
             s=n_abschnitt*i
         
-        sigma=2*f   #Anfangswert, damit sigma für Schleife größer als f ist
+        sigma=2*f   # Anfangswert, damit sigma für Schleife größer als f ist
 
         if loads.alpha_n=="Nein":
             alpha_n=1
@@ -119,21 +122,23 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         else:
             alpha_n=0.7+0.6/(n_abschnitt*i)
         
-        alpha=min(alpha_a,alpha_n)      #Nach Norm darf nur einer der beiden Werte angewendet werden
+        alpha=min(alpha_a,alpha_n)      # Nach Norm darf nur einer der beiden Werte angewendet werden
         
         buildingProp.i_aktuell = i
         buildingProp.ErsteBerechnungSigma = True
 
-        #if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True: #Dann t bereits vorhanden
-            #t = element.t[i-1]
+        if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True and element.typ == 'Stütze': # Dann t bereits vorhanden
+            t = element.t[i-1]
 
-        #Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
+        # Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
         while sigma > f:
             calcProfileProp(element,buildingProp,materialProp,t)        #A, I und W für aktuelles t
             if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True:
                 buildingProp.outriggerAbschnitt = False
+                buildingProp.anzahlOutInAbschnitt = 0
                 for k in buildingProp.posOut_abschnitt:
                     if i == k+1:
+                        buildingProp.anzahlOutInAbschnitt += 1
                         buildingProp.outriggerAbschnitt = True
             N_max,N_kombi,M_max,M_kombi=str_.calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t)
             
@@ -161,6 +166,118 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         b.append(t)             # t in Liste übergeben
       
     element.t=b         #Länge = Anzahl Abschnitte
+
+
+def calcDynamicElementWidth(buildingProp, loads, materialProp, DataProp, str_, element1, element2=None, element3=None, element4=None):
+
+    loads.windData = True
+
+    delta_t=materialProp.delta_t
+
+    if loads.GK == 2:
+            loads.alpha_v = 0.16
+    elif loads.GK == 4:
+            loads.alpha_v = 0.30
+
+    Directions_belastung = [0,5,10,15,20,25,30,35,40,45]
+    #for direction in Directions_belastung:
+        #Durchführung aller Schritte
+    schlankheit = buildingProp.schlankheit
+    direction = str(Directions_belastung[0])
+
+    loads.grabData(buildingProp, DataProp, direction, schlankheit)
+
+    buildingProp.mue=[]
+
+    for i in range (0,len(element1.t)): #element1.t = kern.t (siehe str_core.design)
+        buildingProp.mue.append(0)                                          # oder anders, s. fea auf tik server
+
+    achsen_response = [[DataProp.BMD_fs, DataProp.LFD, 'D'], [DataProp.BML_fs, DataProp.LFL, 'L']]      # LFD und LFL sind Kräfte auf Geschosshöhen
+
+    for achse in [0,1]:
+
+        # Übergabe der aktuellen Lasten
+        loads.F_p_j = achsen_response[achse][1]
+
+        w_max = loads.w_max
+        
+        w_tip = 2*w_max
+
+        # hier Massenberechnung mit aktuellen ts des Tragwerks, vorher schon Bemessung auf Vertikallasten über Calcelementloads?
+        # kein buildingProp.calcBuildMass()
+        while w_tip > w_max:
+
+            # Stiffnessberechnung des aktuellen Systems für Eigenfrequenz
+            str_.buildingStiffness(buildingProp, materialProp, element1, element2, element3, element4)
+
+            # Create analysis model
+            feModelDyn = fea.feModel(buildingProp, loads, materialProp)
+
+            # Compute eigenfrequencies
+            feModelDyn.getEigenfrequency()
+
+            # Calc generalized quantities (K_gen, M_gen)
+            feModelDyn.calcGeneralizedQuantitites()
+
+            # Calc response forces
+            responseForces = response.responseForces(achsen_response[achse][0], DataProp.dT, feModelDyn.fq_e, buildingProp.D, feModelDyn.fq_e, 360)
+            #Wieso zweimal fq_e als Input? response nimmt zweites mal als nue, weiso 360?
+
+            # Calc response deflections
+            # LFL/LFD = FLoor Forces: Wie Berechnung für HFFB Modelldaten?
+            responseDeflections = response.responseDeflection(feModelDyn, responseForces, achsen_response[achse][1])
+            w_tip = responseDeflections.delta_tip_r_max
+            #w_GA dafür noch nicht berücksichtigt, hinzufügen?
+
+            if w_tip > w_max:
+                if element2 == None:        #zB core hat nur ein element, bei dem der QS vergrößert werden kann
+                    element1.t= [element+delta_t for element in element1.t]
+                #else:
+                    #siehe wie buildingDeflection
+
+        a_max = loads.a_max     #muss noch in gui hinzugefügt werden 
+
+        a_rms = 2*a_max
+
+        while a_rms > a_max:
+
+            #buildingProp.calcBuildMass()    # Brauche ich das?
+            # nur Stiffnessberechnung des aktuellen Systems für Eigenfrequenz
+            str_.buildingStiffness(buildingProp, materialProp, element1, element2, element3, element4)
+
+            # Create analysis model
+            feModelDyn = fea.feModel(buildingProp, loads, materialProp)
+
+            # Compute eigenfrequencies
+            feModelDyn.getEigenfrequency()
+
+            # Calc generalized quantities (K_gen, M_gen)
+            feModelDyn.calcGeneralizedQuantitites()
+            # Iterativ: Anfang bis Response + folgendes
+            # Calc response accelerations
+            responseAccelerations = response.responseAccelerations(feModelDyn, achsen_response[achse][0], DataProp.dT, feModelDyn.fq_e, buildingProp.D, feModelDyn.fq_e, 360)
+            a_rms = responseAccelerations.a_r_rms
+
+            # Erhöhen von t, wenn a größer als a_max
+            if a_rms > a_max:
+                if element2 == None:        #zB core hat nur ein element, bei dem der QS vergrößert werden kann
+                    element1.t= [element+delta_t for element in element1.t]
+                #else:
+                    #siehe wie buildingDeflection
+
+        if achsen_response[achse][2] == 'D':
+            buildingProp.dyn_w_tip_D = w_tip
+            buildingProp.dyn_a_rms_D = a_rms
+            buildingProp.dyn_a_max_D = responseAccelerations.a_r_max
+
+        elif achsen_response[achse][2] == 'L':
+            buildingProp.dyn_w_tip_L = w_tip
+            buildingProp.dyn_a_rms_L = a_rms
+            buildingProp.dyn_a_max_L = responseAccelerations.a_r_max
+
+    print(buildingProp.dyn_w_tip_D)
+
+
 
 
 
@@ -215,10 +332,10 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         str_.buildingStiffness(buildingProp,materialProp,element1,element2,element3,element4)        
         
         # Maximale Verformung berechnen
-        feModel=fea.feModel(buildingProp,loads,materialProp)
+        feModel = fea.feModel(buildingProp,loads,materialProp)
         w_EI = fea.feModel.calcStaticWindloadDeflection(feModel)    #Angabe Liste jedes Geschoss
         
-        w_GA=calcShearDeformation(buildingProp, loads)
+        w_GA = calcShearDeformation(buildingProp, loads)
                
         w = w_EI[0] + w_GA[0]
         
@@ -226,7 +343,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
             element1.t= [element+delta_t for element in element1.t]
 
         if element2 != None and w > loads.w_max and w_EI[0] > loads.w_verhältnis*w_GA[0]:      # Biegeverformung größer als erwünscht
-            str_.bendingStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)
+            str_.bendingStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
         
         if element2 != None and w > loads.w_max and w_EI[0] <= loads.w_verhältnis*w_GA[0]:       # Schubverfromung größer als erwünscht
             str_.shearStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)

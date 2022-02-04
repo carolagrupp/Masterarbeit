@@ -138,12 +138,12 @@ def shearStiffnessModification(buildingProp,diagonale,außenStützen,element3,el
     diagonale.t = [element+delta_t for element in diagonale.t]
 
 
-def bendingStiffnessModification(buildingProp,diagonale,außenStützen,element3,element4,delta_t):
+def bendingStiffnessModification(buildingProp,materialProp,diagonale,außenStützen,element3,element4,delta_t):
     
     außenStützen.t = [element+delta_t for element in außenStützen.t]
 
 
-def design(buildingProp,loads,materialProp):
+def design(buildingProp,loads,materialProp,DataProp):
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2

@@ -77,7 +77,7 @@ def buildingStiffness(buildingProp,materialProp,kern,element2,element3,element4)
     buildingProp.GA=GA
    
 
-def design(buildingProp,loads,materialProp):
+def design(buildingProp,loads,materialProp,DataProp):
     #in app.py.MainWondow.MainCalculation
     # Elemente:
     b_raster=buildingProp.b_raster
@@ -98,6 +98,10 @@ def design(buildingProp,loads,materialProp):
     calculations.calcElementWidth(kern,buildingProp,loads,materialProp,str_)
     
     t0=kern.t[-1]       #Kerndicke ganz unten (letztes Element der Liste)
+
+    # Dynamischer Nachweis
+    if loads.dynamicAnalysis == True:
+        calculations.calcDynamicElementWidth(buildingProp, loads, materialProp, DataProp, str_, kern)
 
     # Gebäudenachweise:
     calculations.buildingDeflection(buildingProp,loads,materialProp,str_,kern)

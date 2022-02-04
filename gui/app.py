@@ -33,6 +33,7 @@ from pyLEK.sampleCode.gui.pdHelpers import getAvailMaterials
 from pyLEK.sampleCode.gui.pdHelpers import getMaterialProperties
 
 from pfh import building
+from WindData import data
 from pfh import str_core
 from pfh import str_frame
 from pfh import str_bracedtube
@@ -55,6 +56,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         buildingProp = building.buildingProp()
         materialProp = building.materialProp()
         loads = building.loads()
+        DataProp = data.DataProp()
 
         # Setup gui
         self.gui.setupUi(self)
@@ -73,7 +75,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateStielanzahl) #aktualisiert Anzahl Stiele pro Raster bei Änderung des Tragwerks
         self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateOutriggeranzahl)    #aktualisiert Anzahl Outrigger bei Änderung des Tragwerks
+        
         self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateOutriggerVerhaeltnisse)
+
+        if self.gui.checkBox_170_02.isChecked:
+            self.gui.spinBox_n.valueChanged.connect(self.updateGeometrie)
+            self.gui.spinBox_b_raster.valueChanged.connect(self.updateGeometrie)
+
+
 
         # Abschnitt Vertikallasten
         # Aktualisierung der Designlast bei Änderungen der charakteristischen Teillasten
@@ -105,10 +114,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.spinBox_wk.valueChanged.connect(self.calcWindLoad10Design) #Aktualisierung Designwert Windlast
         self.gui.spinBox_gamma_w.valueChanged.connect(self.calcWindLoad10Design)
 
+        # Abschnitt Windkanaldaten
+
+        self.gui.checkBox_170_02.stateChanged.connect(self.activateWindkanal)
+        self.gui.comboBox_170_23.currentTextChanged.connect(self.calcAlpha_v)
+        self.gui.comboBox_170_13.currentTextChanged.connect(self.updateGeometrie)
+
         # Zum berechnen: Push button zum Starten
-        self.gui.pushButton_einzelberechnung.clicked.connect(lambda: self.pushButton_einzelberechnung(buildingProp,materialProp,loads))
-        self.gui.pushButton_multiberechnung.clicked.connect(lambda: self.pushButton_multiberechnung(buildingProp,materialProp,loads))
-        self.gui.pushButton_multiberechnungParameter.clicked.connect(lambda: self.pushButton_multiberechnungParameter(buildingProp,materialProp,loads))
+        self.gui.pushButton_einzelberechnung.clicked.connect(lambda: self.pushButton_einzelberechnung(buildingProp,materialProp,loads,DataProp))
+        self.gui.pushButton_multiberechnung.clicked.connect(lambda: self.pushButton_multiberechnung(buildingProp,materialProp,loads,DataProp))
+        self.gui.pushButton_multiberechnungParameter.clicked.connect(lambda: self.pushButton_multiberechnungParameter(buildingProp,materialProp,loads,DataProp))
 
         # Zum plotten: Plot bei Änderung
         # Einzelberechnung
@@ -304,6 +319,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def calcTotalBuildingHeight(self):
         """Calculates the total building height
         """                                     #Mehrzeiliger String
+        if self.gui.checkBox_170_02.isChecked:
+            self.updateGeometrie
+
         n = self.gui.spinBox_n.value()
         h_geschoss = self.gui.spinBox_h_geschoss.value()
         h_total = n * h_geschoss
@@ -345,14 +363,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.gui.spinBox_n_outrigger.setValue(1)
 
     def activateOutriggerVerhaeltnisse(self):
+        ''''Aktiviert Steifgkeitsverhältnisse für Outriggersystem'''
         if self.gui.comboBox_tragwerk.currentText() == 'Outrigger':
             self.gui.spinBox_alpha_outrigger.setEnabled(True)
             self.gui.spinBox_beta_outrigger.setEnabled(True)
         else:
             self.gui.spinBox_alpha_outrigger.setEnabled(False)
             self.gui.spinBox_beta_outrigger.setEnabled(False)
-            self.gui.spinBox_alpha_outrigger.setValue(3)
-            self.gui.spinBox_beta_outrigger.setValue(4)
+            self.gui.spinBox_alpha_outrigger.setValue(20)
+            self.gui.spinBox_beta_outrigger.setValue(20)
 
     # Vertikallasten
 
@@ -446,6 +465,49 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         gamma_w = self.gui.spinBox_gamma_w.value()
         w_d=w_k*gamma_w
         self.gui.spinBox_wd.setValue(w_d)
+
+    # Windkanaldaten
+
+    def calcAlpha_v(self):
+        """Updates Profilexponent bei Änderung der Geländekategorie
+        """
+        GK = self.gui.comboBox_170_23
+        if GK == 2:
+            alpha_v = 0.16
+        elif GK == 4:
+            alpha_v = 0.30
+        self.gui.doubleSpinBox_170_33.setValue(alpha_v)
+
+    def activateWindkanal(self):
+        ''''Aktiviert Eingabe Windkanaldaten bei ausgewählter Checkbox'''
+        if self.gui.checkBox_170_02.isChecked() == True:
+            self.gui.comboBox_170_13.setEnabled(True)
+            self.gui.comboBox_170_23.setEnabled(True)
+            self.gui.doubleSpinBox_170_43.setEnabled(True)
+            self.gui.doubleSpinBox_170_53.setEnabled(True)
+            self.gui.spinBox_h_geschoss.setEnabled(False)
+            #self.gui.spinBox_lambda.setValue(self.gui.comboBox_170_13)
+            self.updateGeometrie()
+        else:
+            self.gui.comboBox_170_13.setEnabled(False)
+            self.gui.comboBox_170_23.setEnabled(False)
+            self.gui.doubleSpinBox_170_43.setEnabled(False)
+            self.gui.doubleSpinBox_170_43.setValue(20.00)
+            self.gui.doubleSpinBox_170_53.setEnabled(False)
+            self.gui.doubleSpinBox_170_53.setValue(0.00)
+            self.gui.spinBox_h_geschoss.setEnabled(True)
+
+    def updateGeometrie(self):
+        ''''Aktualisiert Gebäudegeometrie für Windkanaldaten bei Änderung Schlankheit etc'''
+        b_total = self.gui.spinBox_b_total.value()
+        schlankheit = int(self.gui.comboBox_170_13.currentText())
+        n = self.gui.spinBox_n.value()
+        h_total = b_total*schlankheit
+        h_geschoss = h_total/n
+        self.gui.spinBox_h_geschoss.setValue(h_geschoss)
+        # auch aufrufen, wenn sich b_raster, schlankheit, n ändert
+
+
 
     # Profilausgabe (Statische Kennwerte -> Querschnitte):
 
@@ -557,10 +619,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # X-Achse:
         x=[]
         if self.gui.comboBox_xAxis_231.currentText() == 'Biegesteifigkeit':
-            x = 2*[i * materialProp.E/1000 for i in buildingProp.I] #Wieso 2x: um die Werte zu verdoppeln, da Plot alle Werte doppelt braucht, buildingProp.I = I für jeden Abschnitt über die Höhe aus berechnetem Querschnitt
+            x = 2*[i * materialProp.E/1000 for i in buildingProp.I] #2x: um die Werte zu verdoppeln, da Plot alle Werte doppelt braucht, buildingProp.I = I für jeden Abschnitt über die Höhe aus berechnetem Querschnitt
             #x.append(0)
-            x.sort()    
-            xlabel = 'Biegesteifigkeit'
+            x.sort()
+            if buildingProp.tragwerk == 'Outrigger':
+                xlabel = 'Biegesteifigkeit Kern'
+            else:
+                xlabel = 'Biegesteifigkeit'
             legend = ['EI [MNm²]']
             title = 'Biegesteifigkeitsverteilung'
         
@@ -568,7 +633,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             x = 2*buildingProp.GA
             #x.append(0)
             x.sort()
-            xlabel = 'Schubsteifigkeit'
+            if buildingProp.tragwerk == 'Outrigger':
+                xlabel = 'Schubsteifigkeit Kern'
+            else:
+                xlabel = 'Schubsteifigkeit'
             legend = ['GA [kN]']
             title = 'Schubsteifigkeitsverteilung'
 
@@ -594,22 +662,46 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Y-Achse:
         if self.gui.comboBox_yAxis_242.currentText() == 'Gebäudehöhe':
-            y=numpy.arange(buildingProp.h_total,-buildingProp.h_geschoss,-buildingProp.h_geschoss)  #generiert  ndarray mit Staffelung über Gebäudehöhe, beginnt oben
+            if buildingProp.tragwerk == 'Outrigger':
+                y = [buildingProp.h_total]
+                for i in range(1, buildingProp.n):
+                    y.append(buildingProp.h_total - buildingProp.h_geschoss*i)
+                    y.append(buildingProp.h_total - buildingProp.h_geschoss*i)
+                y.append(buildingProp.h_total - buildingProp.h_geschoss*buildingProp.n)
+            else:
+                y=numpy.arange(buildingProp.h_total,-buildingProp.h_geschoss,-buildingProp.h_geschoss)  #generiert  ndarray mit Staffelung über Gebäudehöhe, beginnt oben
             ylabel = 'Höhe [m]'
             
         if self.gui.comboBox_yAxis_242.currentText() == 'Anzahl Stockwerke':
-            y=numpy.arange(buildingProp.n,-1,-1)
+            if buildingProp.tragwerk == 'Outrigger':
+                y = [buildingProp.n]
+                for i in range(1, buildingProp.n):
+                    y.append(buildingProp.n - i)
+                    y.append(buildingProp.n - i)
+                y.append(buildingProp.n - buildingProp.n)
+            else:
+                y=numpy.arange(buildingProp.n,-1,-1)
             ylabel = 'Anzahl Stockwerke [-]'
 
         # X-Achse:
         if self.gui.comboBox_xAxis_241.currentText() == 'Momentenverlauf':
-            x = [i/1000 for i in loads.M]
+            if buildingProp.tragwerk == 'Outrigger':
+                x = [-i/1000 for i in buildingProp.moment_ges]
+            else:
+                x = [i/1000 for i in loads.M]
             xlabel = 'Moment [MNm]'
             title = 'Momentenverlauf'
             legend = ['M']
 
         if self.gui.comboBox_xAxis_241.currentText() == 'Querkraftverlauf':
-            x = [i/1000 for i in loads.V]
+            if buildingProp.tragwerk == 'Outrigger':
+                x = []
+                for i in buildingProp.querkraft:
+                    x.append(i/1000)
+                    x.append(i/1000)
+                #x = 2*[i/1000 for i in buildingProp.querkraft]
+            else:
+                x = [i/1000 for i in loads.V]
             xlabel = 'Querkraft [MN]'
             title = 'Querkraftverlauf'
             legend = ['V']
@@ -681,6 +773,56 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.gui.MplWidget_250.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
                                       legend=legend, mpl=mpl, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+
+    def plotalphaOutrigger(self, buildingProp):
+        # Y-Achse:
+        if self.gui.comboBox_yAxis_262.currentText() == 'Querschnitssabmessungen Stützen in Abschnitten mit Outriggern':
+            if buildingProp.tragwerk == 'Outrigger':
+                y = []
+                for n,i in enumerate(buildingProp.posOut_abschnitt):
+                    y.append(buildingProp.t_stütze[n])
+                    y.append(buildingProp.t_randStützen[i])
+                    y.append(buildingProp.t_eckStützen[i])
+            else:
+                y = [0]
+
+        ymax = 1.1*max(y)
+        y = [y]
+        ylabel = 'QS - Abmessungen [cm]'
+
+            
+        # X-Achse:
+        if self.gui.comboBox_xAxis_261.currentText() == 'Soll - und Ist - Werte der Elemente':
+            if buildingProp.tragwerk == 'Outrigger':
+                xticklabels = ['']
+                for i in range (0, len(buildingProp.posOut)):
+                    j = i + 1
+                    xticklabels.append('t_soll_{}'.format(j))
+                    xticklabels.append('t_ist_Rand_{}'.format(j))
+                    xticklabels.append('t_ist_Eck_{}'.format(j))
+            else: 
+                xticklabels = [0]
+
+
+      
+        # Legende:
+        xlabel = None
+        annotations = 'individual'
+        annotations_position = 'center'
+        title = 'Vergleich der QS- Abmessung nach Steifigkeitsverhältnis alpha (Soll) und der endgültigen Abmessung (Ist)'
+        legend = ['QS - Abmessung']
+
+        breiteMax = len(buildingProp.posOut)*3 - 0.5
+        xlim=[-0.5, breiteMax]
+        ylim=[0,ymax]
+
+        # Speichern:
+        dir_fileName = "alpha_Outrigger Vergleich"
+        saveTex = False
+        savePlt = True
+        
+        self.gui.MplWidget_261.plotBarChart(y, xlabel=xlabel, ylabel=ylabel, title=title, legend=legend, xticklabels=xticklabels,
+                                       annotations=annotations, annotations_position=annotations_position, xlim=xlim, ylim=ylim, dir_fileName=dir_fileName, vLines=None, savePlt=savePlt, saveTex=saveTex)
 
 
     ####    Plots Multiberechnung:
@@ -1113,6 +1255,60 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     ### Parameteranalyse:
 
+    def grenzeAlpha(self, buildingProp, materialProp):
+        max_delta = 2*materialProp.delta_t
+        alpha_1_max_stelle = 0
+        alpha_2_max_stelle = 0
+        alpha_3_max_stelle = 0
+        alpha_4_max_stelle = 0
+        for n in range(1,len(buildingProp.posOut)+1):
+            if n == 1:
+                delta_t_soll_1 = []
+                for i in range(0,len(buildingProp.multiPar_t_soll_1)):
+                    delta_t_soll_1.append(abs(buildingProp.multiPar_t_soll_1[i] - buildingProp.multiPar_t_rand_1[i]))
+                for stelle in delta_t_soll_1:
+                    if stelle > max_delta:
+                        alpha_1_max_stelle += 1                 # Stelle des Alpha Parameters in varianten p, an der t_soll gerade noch erfüllt ist
+                    else: 
+                        break
+
+            elif n == 2:
+                delta_t_soll_2 = []
+                for i in range(0,len(buildingProp.multiPar_t_soll_2)):
+                    delta_t_soll_2.append(abs(buildingProp.multiPar_t_soll_2[i] - buildingProp.multiPar_t_rand_2[i]))
+                for stelle in delta_t_soll_2:
+                    if stelle > max_delta:
+                        alpha_2_max_stelle += 1
+                    else: 
+                        break
+                
+            elif n == 3:
+                delta_t_soll_3 = []
+                for i in range(0,len(buildingProp.multiPar_t_soll_3)):
+                    delta_t_soll_3.append(abs(buildingProp.multiPar_t_soll_3[i] - buildingProp.multiPar_t_rand_3[i]))
+                for stelle in delta_t_soll_3:
+                    if stelle > max_delta:
+                        alpha_3_max_stelle += 1
+                    else: 
+                        break
+
+            elif n == 4:
+                delta_t_soll_4 = []
+                for i in range(0,len(buildingProp.multiPar_t_soll_4)):
+                    delta_t_soll_4.append(abs(buildingProp.multiPar_t_soll_4[i] - buildingProp.multiPar_t_rand_4[i]))
+                for stelle in delta_t_soll_4:
+                    if stelle > max_delta:
+                        alpha_4_max_stelle += 1
+                    else: 
+                        break
+
+        # Minimum der vier möglichen Stellen
+        alpha_max_stelle = max(alpha_1_max_stelle, alpha_2_max_stelle, alpha_3_max_stelle, alpha_4_max_stelle)                            
+        grenze = buildingProp.multi_p[alpha_max_stelle]
+        return grenze
+            
+
+
     def plotParameterAnalysis(self,buildingProp,materialProp):
 
         # Y-Achse:
@@ -1147,6 +1343,59 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             
             ylabel = 'Primärenergiebedarf PET [GJ]'
 
+        if self.gui.comboBox_yAxis_412.currentText() == 'Verformung':
+
+            for i in range(0,len(buildingProp.multiPar_w)):
+                y3.append(buildingProp.multiPar_w_GA[i]*1000)
+                y2.append(buildingProp.multiPar_w_EI[i]*1000)
+                y1.append(buildingProp.multiPar_w[i]*1000)
+            
+            ylabel = 'Verformung [mm]'
+
+        if self.gui.comboBox_yAxis_412.currentText() == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+
+            if buildingProp.tragwerk == 'Outrigger':
+                y1a = []
+                y2a = []
+                y3a = []
+                y1b = []
+                y2b = []
+                y3b = []
+                y1c = []
+                y2c = []
+                y3c = []
+                y1d = []
+                y2d = []
+                y3d = []
+
+                for n in range(1,len(buildingProp.posOut)+1):
+                    if n == 1:
+                        for i in range(0,len(buildingProp.multiPar_t_soll_1)):
+                            y1a.append(buildingProp.multiPar_t_soll_1[i])
+                            y2a.append(buildingProp.multiPar_t_rand_1[i])
+                            y3a.append(buildingProp.multiPar_t_eck_1[i])
+                    elif n == 2:
+                        for i in range(0,len(buildingProp.multiPar_t_soll_1)):
+                            y1b.append(buildingProp.multiPar_t_soll_2[i])
+                            y2b.append(buildingProp.multiPar_t_rand_2[i])
+                            y3b.append(buildingProp.multiPar_t_eck_2[i])
+                    elif n == 3:
+                        for i in range(0,len(buildingProp.multiPar_t_soll_1)):
+                            y1c.append(buildingProp.multiPar_t_soll_3[i])
+                            y2c.append(buildingProp.multiPar_t_rand_3[i])
+                            y3c.append(buildingProp.multiPar_t_eck_3[i])
+                    elif n == 4:
+                        for i in range(0,len(buildingProp.multiPar_t_soll_1)):
+                            y1d.append(buildingProp.multiPar_t_soll_4[i])
+                            y2d.append(buildingProp.multiPar_t_rand_4[i])
+                            y3d.append(buildingProp.multiPar_t_eck_4[i])
+            else:
+                y1 = []
+                y2 = []
+                y3 = []
+            
+            ylabel = 'Querschnittswerte der Stützen [cm]'
+
         # X-Achse:
         x1=buildingProp.multi_p
 
@@ -1168,25 +1417,82 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel = 'n_{Outrigger}'
         if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
             xlabel = 'alpha_outrigger'
+            #Bestimmung wann alpha nicht mehr eingehalten (Differenz zwischen t_soll und t_rand größer als delta_t)
+            Grenze = self.grenzeAlpha(buildingProp, materialProp)
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             xlabel = 'beta_outrigger'
         
         
         # Legende:
-        legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
+        if self.gui.comboBox_yAxis_412.currentText() == 'Verformung':
+            legend = ['w','w_EI', 'w_GA']
+        if self.gui.comboBox_yAxis_412.currentText() == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            anzahl_outrigger = len(buildingProp.posOut)
+            if anzahl_outrigger == 0:
+                legend = []
+            elif anzahl_outrigger == 1:
+                legend = ['t_soll_1','t_rand_1', 't_eck_1']
+            elif anzahl_outrigger == 2:
+                legend = ['t_soll_1','t_rand_1', 't_eck_1', 't_soll_2','t_rand_2', 't_eck_2']
+            elif anzahl_outrigger == 3:
+                legend = ['t_soll_1','t_rand_1', 't_eck_1', 't_soll_2','t_rand_2', 't_eck_2', 't_soll_3','t_rand_3', 't_eck_3']
+            elif anzahl_outrigger == 4:
+                legend = ['t_soll_1','t_rand_1', 't_eck_1', 't_soll_2','t_rand_2', 't_eck_2', 't_soll_3','t_rand_3', 't_eck_3', 't_soll_4','t_rand_4', 't_eck_4']
+        else:
+            legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
         title =None     #'Parametereinfluss auf Kummulierten Resourcenverbrauch'
         
         mpl='plotStyle_plot2D'
 
-        maxWert=max(max(y1),max(y2),max(y3))
-        minWert=min(min(y1),min(y2),min(y3))
-        bereich=maxWert-minWert
-        ylim=[minWert-0.1*bereich,maxWert+0.1*bereich]
-        ylim=[min(y1),maxWert]
-
-        x=[x1,x1,x1]
-        y=[y1,y2,y3]
         
+        if self.gui.comboBox_yAxis_412.currentText() == 'Steifigkeitsverhältnis Alpha (Outrigger)' and buildingProp.tragwerk == 'Outrigger':
+            anzahl_outrigger = len(buildingProp.posOut)
+            if anzahl_outrigger == 0:
+                x = []
+                y = []
+                maxWert=0
+                minWert=0
+            elif anzahl_outrigger == 1:
+                x = [x1, x1, x1]
+                y = [y1a, y2a, y3a]
+                maxWert=max(max(y1a),max(y2a),max(y3a))
+                minWert=min(min(y1a),min(y2a),min(y3a))
+            elif anzahl_outrigger == 2:
+                x = [x1, x1, x1, x1, x1, x1]
+                y = [y1a, y2a, y3a, y1b, y2b, y3b]
+                maxWert=max(max(y1a),max(y2a),max(y3a),max(y1b),max(y2b),max(y3b))
+                minWert=min(min(y1a),min(y2a),min(y3a),min(y1b),min(y2b),min(y3b))
+            elif anzahl_outrigger == 3:
+                x = [x1, x1, x1, x1, x1, x1, x1, x1, x1]
+                y = [y1a, y2a, y3a, y1b, y2b, y3b, y1c, y2c, y3c]
+                maxWert=max(max(y1a),max(y2a),max(y3a),max(y1b),max(y2b),max(y3b),max(y1c),max(y2c),max(y3c))
+                minWert=min(min(y1a),min(y2a),min(y3a),min(y1b),min(y2b),min(y3b),min(y1c),min(y2c),min(y3c))
+            elif anzahl_outrigger == 4:
+                x = [x1, x1, x1, x1, x1, x1, x1, x1, x1, x1, x1, x1]
+                y = [y1a, y2a, y3a, y1b, y2b, y3b, y1c, y2c, y3c, y1d, y2d, y3d]
+                maxWert=max(max(y1a),max(y2a),max(y3a),max(y1b),max(y2b),max(y3b),max(y1c),max(y2c),max(y3c),max(y1d),max(y2d),max(y3d))
+                minWert=min(min(y1a),min(y2a),min(y3a),min(y1b),min(y2b),min(y3b),min(y1c),min(y2c),min(y3c),min(y1d),min(y2d),min(y3d))
+            bereich=maxWert-minWert
+            ylim=[minWert-0.1*bereich,maxWert+0.1*bereich]
+        else:
+            maxWert=max(max(y1),max(y2),max(y3))
+            minWert=min(min(y1),min(y2),min(y3))
+            x=[x1,x1,x1]
+            y=[y1,y2,y3]
+            bereich=maxWert-minWert
+            ylim=[minWert-0.1*bereich,maxWert+0.1*bereich]
+            ylim=[min(y1),maxWert]
+        
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            vLines = [Grenze]
+            vTexts = ['Alpha bei Randstütze nicht mehr eingehalten']
+            
+
+        else:
+            vLines=None
+            vTexts=None
+        
+
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Materialmenge nach Parameter"
@@ -1194,7 +1500,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         savePlt = True
         
         self.gui.MplWidget_410.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
-                                    legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+                                    legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
 
 
     def plotOptimalParameter(self,buildingProp,materialProp):
@@ -1480,31 +1786,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     #------------------------------------------------------------------------------------------
     # Berechnungen:
 
-    def mainCalculation(self,buildingProp,loads,materialProp):
+    def mainCalculation(self,buildingProp,loads,materialProp,DataProp):
         # Ruft die dem Tragwerk entsprechende Datei auf
 
         # Berechnen der Schnittgrößen innerhalb der Klasse loads - Momente sind danch Teil der Klasse
         building.loads.calculateInternalForces(loads, buildingProp)
 
         if buildingProp.tragwerk == 'Kerntragwerk':
-            str_core.design(buildingProp, loads, materialProp)
+            str_core.design(buildingProp, loads, materialProp,DataProp)
 
         if buildingProp.tragwerk == 'Rahmentragwerk':
-            str_frame.design(buildingProp, loads, materialProp)
+            str_frame.design(buildingProp, loads, materialProp,DataProp)
 
         if buildingProp.tragwerk == 'Braced Tube':
-            str_bracedtube.design(buildingProp, loads, materialProp)
+            str_bracedtube.design(buildingProp, loads, materialProp,DataProp)
 
         if buildingProp.tragwerk == 'Framed Tube':
-            str_framedTube.design(buildingProp,loads,materialProp)
+            str_framedTube.design(buildingProp,loads,materialProp,DataProp)
 
         if buildingProp.tragwerk == 'Outrigger':
-            str_outrigger.design(buildingProp,loads,materialProp)
+            str_outrigger.design(buildingProp,loads,materialProp,DataProp)
         
         building.buildingProp.calcFloorWeight(buildingProp,materialProp)
 
 
-    def pushButton_einzelberechnung(self,buildingProp,materialProp,loads):
+    def pushButton_einzelberechnung(self,buildingProp,materialProp,loads,DataProp):
         self.gui.progressBar.setValue(10)
 
         self.submit_buildingProp(buildingProp)
@@ -1512,7 +1818,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.submit_materialProp(materialProp)
         self.gui.progressBar.setValue(20)
 
-        self.mainCalculation(buildingProp,loads,materialProp)
+        self.mainCalculation(buildingProp,loads,materialProp,DataProp)
         self.gui.progressBar.setValue(40)
 
         self.showProfiles(buildingProp)
@@ -1528,10 +1834,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.progressBar.setValue(80)
 
         self.plotDeformationCurve(buildingProp)
+        self.gui.progressBar.setValue(90)
+
+        
+        self.plotalphaOutrigger(buildingProp)
         self.gui.progressBar.setValue(100)
 
 
-    def pushButton_multiberechnung(self,buildingProp,materialProp,loads):
+    def pushButton_multiberechnung(self,buildingProp,materialProp,loads,DataProp):
         self.gui.progressBar.setValue(10)
 
         self.gui.progressBar.setValue(20)
@@ -1590,9 +1900,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             print('-------',buildingProp.n,'-------')
 
-            self.mainCalculation(buildingProp,loads,materialProp)
+            self.mainCalculation(buildingProp,loads,materialProp,DataProp)
 
-            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1]) #Übernahme des Werts an Fußpunkt des Gebäudes (Summe des Gesamten), g=Maße
+            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1]) # Übernahme des Werts an Fußpunkt des Gebäudes (Summe des Gesamten), g=Maße
             buildingProp.multi_G_außenStützen.append(buildingProp.G_außenStützen[-1])
             buildingProp.multi_G_innenStützen.append(buildingProp.G_innenStützen[-1])
             buildingProp.multi_G_total.append(buildingProp.G_total[-1])
@@ -1606,7 +1916,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             buildingProp.multi_eigenFrequenz.append(buildingProp.eigenFrequenz)
 
-            if self.gui.comboBox_parameter.currentText()!='Keiner':     #keine Parametervariation
+            if self.gui.comboBox_parameter.currentText()!='Keiner':     # Parametervariation
                 self.multiberechnungParameter(buildingProp,materialProp,loads)
 
                 index=buildingProp.multiPar_G_total.index(min(buildingProp.multiPar_G_total))
@@ -1652,7 +1962,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.progressBar.setValue(100)
 
 
-    def pushButton_multiberechnungParameter(self,buildingProp,materialProp,loads):  #Parametervariation
+    def pushButton_multiberechnungParameter(self,buildingProp,materialProp,loads,DataProp):  #Parametervariation
         self.gui.progressBar.setValue(10)
 
         self.submit_buildingProp(buildingProp)
@@ -1660,13 +1970,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.submit_materialProp(materialProp)
         self.gui.progressBar.setValue(20)
 
-        self.multiberechnungParameter(buildingProp,materialProp,loads)
+        self.multiberechnungParameter(buildingProp,materialProp,loads,DataProp)
 
         self.plotParameterAnalysis(buildingProp, materialProp)
         self.gui.progressBar.setValue(100)
 
 
-    def multiberechnungParameter(self,buildingProp,materialProp,loads):
+    def multiberechnungParameter(self,buildingProp,materialProp,loads,DataProp):
         p_min=self.gui.spinBox_p_min.value()
         p_max=self.gui.spinBox_p_max.value()
         varianten_p=int(self.gui.spinBox_varianten_p.value())
@@ -1683,6 +1993,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         buildingProp.multiPar_G_decken=[]
         buildingProp.multiPar_G_totalOhnePFH=[]
         buildingProp.multiPar_eigenFrequenz=[]
+        buildingProp.multiPar_t_soll_1 = []
+        buildingProp.multiPar_t_rand_1 = []
+        buildingProp.multiPar_t_eck_1 = []
+        buildingProp.multiPar_t_soll_2 = []
+        buildingProp.multiPar_t_rand_2 = []
+        buildingProp.multiPar_t_eck_2 = []
+        buildingProp.multiPar_t_soll_3 = []
+        buildingProp.multiPar_t_rand_3 = []
+        buildingProp.multiPar_t_eck_3 = []
+        buildingProp.multiPar_t_soll_4 = []
+        buildingProp.multiPar_t_rand_4 = []
+        buildingProp.multiPar_t_eck_4 = []
         
         for i in range (0,varianten_p):
             # Verändern von n und den zugehörigen Variablen
@@ -1737,7 +2059,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             
             print('-------',buildingProp.p,'-------')
 
-            self.mainCalculation(buildingProp,loads,materialProp)
+            self.mainCalculation(buildingProp,loads,materialProp,DataProp)
 
             buildingProp.multiPar_G_aussteifung.append(buildingProp.G_aussteifung[-1])
             buildingProp.multiPar_G_außenStützen.append(buildingProp.G_außenStützen[-1])
@@ -1746,6 +2068,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             buildingProp.multiPar_G_decken.append(buildingProp.G_decken)
             buildingProp.multiPar_G_totalOhnePFH.append(buildingProp.G_totalOhnePFH[-1])
             buildingProp.multiPar_eigenFrequenz.append(buildingProp.eigenFrequenz)
+            buildingProp.multiPar_w_EI.append(buildingProp.w_EI[0])
+            buildingProp.multiPar_w_GA.append(buildingProp.w_GA[0])
+            buildingProp.multiPar_w.append(buildingProp.w)
+            if buildingProp.tragwerk == 'Outrigger':
+                for n, posOut in enumerate(buildingProp.posOut_abschnitt):
+                    if n == 0:
+                        buildingProp.multiPar_t_soll_1.append(buildingProp.t_stütze[n])
+                        buildingProp.multiPar_t_rand_1.append(buildingProp.t_randStützen[posOut])
+                        buildingProp.multiPar_t_eck_1.append(buildingProp.t_eckStützen[posOut])
+                    elif n == 1:
+                        buildingProp.multiPar_t_soll_2.append(buildingProp.t_stütze[n])
+                        buildingProp.multiPar_t_rand_2.append(buildingProp.t_randStützen[posOut])
+                        buildingProp.multiPar_t_eck_2.append(buildingProp.t_eckStützen[posOut])
+                    elif n == 2:
+                        buildingProp.multiPar_t_soll_3.append(buildingProp.t_stütze[n])
+                        buildingProp.multiPar_t_rand_3.append(buildingProp.t_randStützen[posOut])
+                        buildingProp.multiPar_t_eck_3.append(buildingProp.t_eckStützen[posOut])
+                    elif n == 3:
+                        buildingProp.multiPar_t_soll_4.append(buildingProp.t_stütze[n])
+                        buildingProp.multiPar_t_rand_4.append(buildingProp.t_randStützen[posOut])
+                        buildingProp.multiPar_t_eck_4.append(buildingProp.t_eckStützen[posOut])
+
+
 
 
     # Übergabe der Werte in Objekte der Klassen buildingProp, loads und material:
@@ -1790,6 +2135,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         loads.wk = self.gui.spinBox_wk.value()
         loads.gamma_w = self.gui.spinBox_gamma_w.value()
         loads.GK = self.gui.spinBox_GK.value()
+        if self.gui.checkBox_170_02.isChecked():
+            loads.GK = int(self.gui.comboBox_170_23.currentText())
+            loads.alpha_v = self.gui.doubleSpinBox_170_33.value()
+            loads.v_bk = self.gui.doubleSpinBox_170_43.value()
+            loads.D = self.gui.doubleSpinBox_170_53.value()
+            loads.dynamicAnalysis = True
         loads.Psi_q = self.gui.spinBox_Psi_q.value()
         loads.Psi_w = self.gui.spinBox_Psi_w.value()
         loads.gamma_gdyn = self.gui.spinBox_gamma_g_dyn.value()

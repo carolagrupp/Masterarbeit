@@ -25,6 +25,8 @@ from feastruct.solvers.linstatic import LinearStatic
 from feastruct.solvers.naturalfrequency import NaturalFrequency
 from feastruct.solvers.feasolve import SolverSettings
 
+from WindData import data
+
 import pyLEK.plotters.plot2D as plt
 
 # ------------------------------------------------------------------------------
@@ -55,27 +57,31 @@ class feModel:
         :param buildingProp: full scale properties of the building
         :type buildingProp: :class:`~modelProp.buildProp`
         """
+
         # Setting up calculation model
         # ------------
         # preprocessor
         # ---------
         # constants & lists
         self.L = buildingProp.h_total                  # length of the beam [m]
-        self.n=buildingProp.n     # number of nodes between support and tip [-] gewählt: pro Etage ein Knoten
-        
+        self.n=buildingProp.n                          # number of nodes between support and tip [-] gewählt: pro Etage ein Knoten
+        if loads.windData == True:
+            DataProp = data.DataProp()
+            #self.z = DataProp.z_lev                     # coordinates for datapoints [m]
+
         # everything starts with the analysis object
         self.analysis = FrameAnalysis2D()
 
+
+        ### NODES
+        # ---------------
         # nodes are objects
         self.nodes = []
-        for i in range(0,self.n+1): # 0 for tip
+        for i in range(0,self.n+1):                     # 0 for tip
             node = self.analysis.create_node(coords=[0, self.L-i*buildingProp.h_geschoss])
             self.nodes.append(node)
             
-            # print(node.y) # Koordinaten - Kontrolle
 
-        # bs/ce: Test: Anzahl Beams = Anzahl nodes - 1, dass passt
-        #print("Anzahl nodes = " + str(len(self.nodes)))
           
         # materials and sections are objects
         # self.material = Material("Dummy", materialProp.E, 0.2, buildingProp.mue, colour='w')
@@ -87,14 +93,15 @@ class feModel:
         # Erlaubt nur Bewegung der Knoten in x und z Richtung und Rotation um y-Achse (-> zweidimensional)
 
         # Der support Knoten (letzter Knoten, daher -1) ist eingespannt und hat daher gar keine Freiheiten, keine Federsteifigkeit
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=0, stiff=0)      #add_nodal_support in fea>cases
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=1, stiff=0)
-        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=5, stiff=0)
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=0)      #add_nodal_support in fea>cases
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=1)
+        self.freedom_case.add_nodal_support(node=self.nodes[-1], val=0, dof=5)
         
 
         if buildingProp.tragwerk=='Outrigger':
             for j,i in enumerate(buildingProp.posOut):
-                self.freedom_case.add_nodal_support(node=self.nodes[i], val=0, dof=5, stiff=buildingProp.K[j])
+                self.freedom_case.add_nodal_spring(node=self.nodes[i], val=buildingProp.K[j], dof=5)
+                #self.freedom_case.add_nodal_support(node=self.nodes[i], val=0, dof=5, stiff=buildingProp.K[j])
                 
 
 
@@ -104,27 +111,38 @@ class feModel:
         # Adding loads
         self.load_case = cases.LoadCase()
 
-        for i in range(0,self.n+1):
-            self.load_case.add_nodal_load(node=self.nodes[i], val=loads.F_p[i] , dof=0, stiff = 0) # i+1 (support, tip)
+        if loads.windData == False:
+            for i in range(0,self.n+1):
+                self.load_case.add_nodal_load(node=self.nodes[i], val=loads.F_p[i] , dof=0) # i+1 (support, tip)
+
+        elif loads.windData == True:
+            # Loop over all nodes
+            for j in range(len(loads.F_p_j)):
+                # Search for node by z coordinate
+                F_p = np.mean(loads.F_p_j[j])        #[in KN]
+                self.load_case.add_nodal_load(node=self.nodes[j], val=F_p , dof=0) 
+                # Check applied loading
+                # print('at z = '+ str(z_j) )
+                # print('F_p  = '+ str(F_p) )
 
         # an analysis case relates a support case to a load case
         self.analysis_case = cases.AnalysisCase(freedom_case=self.freedom_case, load_case=self.load_case)
 
+        ### BEAMS
+        # ----------
         self.beams = []
 
         for i in range (0,self.x):
-  
+            ## SECTION
             self.section = Section(ixx=buildingProp.I[i])
+
+            ## MATERIAL
             self.material = Material("Dummy", materialProp.E, 0.2, buildingProp.mue[i], colour='w')
 
             # self.section = Section(area=1, ixx=1000)
 
             for j in range (i*buildingProp.n_abschnitt, (i+1)*buildingProp.n_abschnitt):
-                # bs/ce: 
-                # Auch hier passt was noch nicht so ganz
-                # Beams werden von j bis j+1 erstellt. Das passt, aber sowie ich das sehe 
-                # gibt es nodes zwischen denen keine beams erstellt werden
-                               
+                # Add beams                               
                 beam = self.analysis.create_element(el_type='EB2-2D', nodes=[self.nodes[j], self.nodes[j+1]], material=self.material, section=self.section)
                 # print("Beam von j=" + str(j) + "bis j+1=" + str(j+1))
                 self.beams.append(beam)
@@ -149,38 +167,21 @@ class feModel:
         solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
         solver.solve()
 
-        beamBernoulli = frame2d.EulerBernoulli2D_2N(nodes = self.nodes, material = self.material , section = self.section)
-        fea_int = fea.FiniteElement(nodes = self.nodes, material = self.material, efs = beamBernoulli.efs)
-
-        #wie in feasolve solver.calculate_stresses(self.analysis_case)
-        for el in solver.analysis.elements:
-             # get element stiffness matrix
-            k_el = el.get_stiffness_matrix()
-
-            # get nodal displacements
-            u_el = el.get_nodal_displacements(analysis_case=self.analysis_case).reshape(-1)
-
-            # calculate internal force vector
-            f_int = np.matmul(k_el, u_el)
-
-            # find element loads
-            for element_load in self.analysis_case.load_case.element_items:
-                # if the current element has an applied element load
-                if element_load.element is el:
-                    # add nodal equivalent loads to f_int
-                    f_int += element_load.nodal_equivalent_loads()
-            el.save_fint(f=f_int, analysis_case=self.analysis_case)
-            #fea_int.save_fint(f=f_int, analysis_case=self.analysis_case)
-
-
+        #beamBernoulli = frame2d.EulerBernoulli2D_2N(nodes = self.nodes, material = self.material , section = self.section)
+        #fea_int = fea.FiniteElement(nodes = self.nodes, material = self.material, efs = beamBernoulli.efs)
         
-        bm = [] 
+        bm = []
         #for i in range (0, len(self.nodes)):
-        [xis, bm] = beamBernoulli.get_bm(self.nodes, self.analysis_case)
-            #bm_value_max = max(abs(min(bm_value)), abs(max(bm_value)))
-            #bm.append(bm_value_max)
-        #Liest es jetzt einen Wert für jede Node oder zwei? Dann eventeuell jeden zwieten löschen     
-        return bm 
+        for el in solver.analysis.elements:
+            bmd = el.get_bmd(2, self.analysis_case)
+            bm_i1 = bmd[1][0]
+            bm_i2 = bmd[1][1]
+            #bm_i = max(abs(bmd[1][1]), abs(bmd[1][0]))
+            #bm_i = bmd[1][1]
+            bm.append(bm_i1)
+            bm.append(bm_i2)
+                 
+        return bm
 
 
 
@@ -306,6 +307,11 @@ class feModel:
         # Get the global stiffness / mass matrix
         (K, Kg) = solver.assemble_stiff_matrix()
         self.M = solver.assemble_mass_matrix()
+
+        (self.f_ext, self.f_eq) = solver.assemble_fext(analysis_case=analysis_case)
+
+        # apply spring condition
+        self.K_mod = solver.apply_spring(K=K, analysis_case=analysis_case)
 
         # apply the boundary conditions
         self.K_mod = solver.remove_constrained_dofs(K=K, analysis_case=analysis_case)
