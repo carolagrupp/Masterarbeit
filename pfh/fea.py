@@ -234,7 +234,7 @@ class feModel:
             displacements.append(self.nodes[i].get_displacements(self.analysis_case)[0])
             #delta_tip = self.nodes[0].get_displacements(self.analysis_case)[0]
        
-        return displacements #delta_tip   
+        return displacements   
 
 
     def calcInterstoryDrift(self,buildingProp):

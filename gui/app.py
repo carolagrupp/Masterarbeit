@@ -78,9 +78,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.gui.comboBox_tragwerk.currentTextChanged.connect(self.activateOutriggerVerhaeltnisse)
 
-        if self.gui.checkBox_170_02.isChecked:
-            self.gui.spinBox_n.valueChanged.connect(self.updateGeometrie)
-            self.gui.spinBox_b_raster.valueChanged.connect(self.updateGeometrie)
+        #if self.gui.checkBox_170_02.isChecked:
+            #self.gui.spinBox_n.valueChanged.connect(self.updateGeometrie)
+            #self.gui.spinBox_b_raster.valueChanged.connect(self.updateGeometrie)
 
 
 
@@ -319,8 +319,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def calcTotalBuildingHeight(self):
         """Calculates the total building height
         """                                     #Mehrzeiliger String
-        if self.gui.checkBox_170_02.isChecked:
-            self.updateGeometrie
+        #if self.gui.checkBox_170_02.isChecked:
+            #self.updateGeometrie
 
         n = self.gui.spinBox_n.value()
         h_geschoss = self.gui.spinBox_h_geschoss.value()
@@ -485,9 +485,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.gui.comboBox_170_23.setEnabled(True)
             self.gui.doubleSpinBox_170_43.setEnabled(True)
             self.gui.doubleSpinBox_170_53.setEnabled(True)
-            self.gui.spinBox_h_geschoss.setEnabled(False)
+            #self.gui.spinBox_h_geschoss.setEnabled(False)
             #self.gui.spinBox_lambda.setValue(self.gui.comboBox_170_13)
-            self.updateGeometrie()
+            #self.updateGeometrie()
         else:
             self.gui.comboBox_170_13.setEnabled(False)
             self.gui.comboBox_170_23.setEnabled(False)
@@ -2140,7 +2140,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             loads.alpha_v = self.gui.doubleSpinBox_170_33.value()
             loads.v_bk = self.gui.doubleSpinBox_170_43.value()
             loads.D = self.gui.doubleSpinBox_170_53.value()
-            loads.dynamicAnalysis = True
+            #loads.dynamicAnalysis = True
         loads.Psi_q = self.gui.spinBox_Psi_q.value()
         loads.Psi_w = self.gui.spinBox_Psi_w.value()
         loads.gamma_gdyn = self.gui.spinBox_gamma_g_dyn.value()

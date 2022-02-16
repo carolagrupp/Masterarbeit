@@ -75,11 +75,12 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
     # Extrahieren der benötigten Eigenschaften aus den Objekten:   
     n=buildingProp.n
     n_abschnitt=buildingProp.n_abschnitt
-    x=buildingProp.x        #def. in app.py submit_buildingProp:n/n_abschnitt
+    x=buildingProp.x        #def. in app.py submit_buildingProp:int(n/n_abschnitt)
     h_geschoss=buildingProp.h_geschoss
         
     f=materialProp.f        #Festigkeit Material
     gamma=materialProp.gamma
+    gamma_g=loads.gamma_g
 
     #Abminderungsbeiwert Einzugsfläche (EC1-1-1/NA, 6.3.1.2(10))
     if loads.alpha_a=="Nein" or element.A_einzug == 0:
@@ -158,10 +159,10 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         
         #Ng auf darunterliegendes Geschoss aus EG des Elements
         if i==x+1:
-            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*1.35
+            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
 
         else:
-            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*n_abschnitt*h_geschoss*1.35
+            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*n_abschnitt*h_geschoss*gamma_g
        
         b.append(t)             # t in Liste übergeben
       
@@ -285,7 +286,10 @@ def calcDynamicElementWidth(buildingProp, loads, materialProp, DataProp, str_, e
 def calcShearDeformation(buildingProp,loads):
     'Schubverfromung berechnen'
     # Berechnung der Verformung erfolgt nicht wie sonst von oben nach unten sondern von unten nach oben
-    M=loads.M
+    if buildingProp.tragwerk == 'Outrigger':
+        M = buildingProp.moment
+    else:
+        M=loads.M
     x=buildingProp.x
     n_abschnitt=buildingProp.n_abschnitt
     n=buildingProp.n
@@ -381,7 +385,7 @@ def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,
             element1.t= [element+delta_t for element in element1.t]
 
         if element2 != None and Teta_i > loads.maxTeta_i and w_EI_max > loads.w_verhältnis*buildingProp.w_GA[0]:      # Biegeverformung an Gebäudespitze größer als erwünscht
-            str_.bendingStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)
+            str_.bendingStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
         
         if element2 != None and Teta_i > loads.maxTeta_i and w_EI_max <= loads.w_verhältnis*buildingProp.w_GA[0]:     # Schubverfromung an Gebäudespitze größer als erwünscht
             str_.shearStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)

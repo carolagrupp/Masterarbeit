@@ -73,17 +73,19 @@ def calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüber
 
         if buildingProp.outriggerAbschnitt == True and element.typ == "Stütze" and buildingProp.ErsteBerechnungSigma == True:  # Überprüfung ob in Outrigger Abschnitt
             j = buildingProp.j
-            
-            #buildingProp.sigmaStütze_outrigger[j]*element.A
             deltaNOut = 0
+
             for outrigger_i in range(0,buildingProp.anzahlOutInAbschnitt):
                 deltaNOut += gamma_w*buildingProp.kraftStütze_outrigger[ j + outrigger_i]
+
             deltaN = deltaNOut\
                 +3*buildingProp.t_outrigger_now[buildingProp.posOut[j]]/100*h_geschoss*gamma*gamma_g*buildingProp.b_raster/8*2/5\
                 +h_geschoss*b_raster*buildingProp.t_belt_now[buildingProp.posOut[j]]/100*gamma*gamma_g                          # deltaN = N aus Outriggerwirkung + N_EG_Outrigger + N_EG_belt
+            
             buildingProp.N_max_delta += Psi_w*deltaN
             buildingProp.N_kombi_delta += deltaN
-            buildingProp.j += buildingProp.anzahlOutInAbschnitt
+
+            buildingProp.j += buildingProp.anzahlOutInAbschnitt                                                                 # Erhöhen der berücksichtigten Outrigger
 
         if element.typ == "Kern":                                                                                               # Zusatzbelastung Kern aus Aussteifung
             bm = buildingProp.moment
@@ -141,8 +143,8 @@ def arrangementOutrigger(buildingProp):
 
     # Umwandlung in Abschnitte
     buildingProp.posOut_abschnitt = []
-    for i in range(0, len(buildingProp.posOut)):
-        buildingProp.posOut_abschnitt.append(buildingProp.posOut[i]//buildingProp.n_abschnitt)              # Liste mit Liste der Abschnitte in denen Outrigger sind
+    for posOut in buildingProp.posOut:
+        buildingProp.posOut_abschnitt.append(posOut//buildingProp.n_abschnitt)              # Liste mit Liste der Abschnitte in denen Outrigger sind
  
 def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze):
     """Berechnet die Dimension des Outriggers über das Steifigkeitsverhältnis zum Kern 
@@ -150,65 +152,67 @@ def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, ec
         """
 
     beta_outrigger = buildingProp.beta_outrigger
-    alpha_outrigger = buildingProp.alpha_outrigger#*10**(-3)
+    alpha_outrigger = buildingProp.alpha_outrigger
     b_total = buildingProp.b_total
     b_raster = buildingProp.b_raster
     h_geschoss = buildingProp.h_geschoss
     h = buildingProp.h_total
     a = materialProp.delta_t
+
     # Berechnung Steifigkeit des Kerns
-    buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)   # nur core, passt das?
+    buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
 
-    # Dimensionierung des Outriggers über Steifigkeitsverhältnis zu Kern
-    #for i in buildingProp.posOut:
-        #outrigger.t[i] = materialProp.t_min                                         # Dicke t auf t_min zurücksetzen
+    I = buildingProp.I
+    E = materialProp.E
 
-    for i in buildingProp.posOut:
-        I_outrigger_eff_i = materialProp.E/materialProp.E*buildingProp.I[i//buildingProp.n_abschnitt]*b_total/(beta_outrigger*h)          # m**4
-        I_outrigger_i = I_outrigger_eff_i/(1+b_raster/b_raster)**3
-        b_erf=I_outrigger_i*12/(h_geschoss)**3*100                                  # cm
-        b_vorh = outrigger.t[i]
+    for posOut in buildingProp.posOut:
+        I_outEff_soll_i = E/E*I[posOut//buildingProp.n_abschnitt]*b_total/(beta_outrigger*h)          # m**4
+        I_outrigger_soll_i = I_outEff_soll_i/(1+b_raster/b_raster)**3
+        b_erf=I_outrigger_soll_i*12/(h_geschoss)**3*100                                  # cm
+        b_vorh = outrigger.t[posOut]
         while b_vorh < b_erf:
             b_vorh += a
-        outrigger.t[i] = b_vorh
+        outrigger.t[posOut] = b_vorh
 
-    #print('Rand vor alpha', randStütze.t)
-    #print('Eck vor alpha', eckStütze.t)
 
     buildingProp.t_stütze = []
 
     # Erhöhen der Stützenquerschnitte, wenn kleiner als erforderliches Steifigkeitsverhältnisses
-    for i in buildingProp.posOut_abschnitt:
-        A_stütze = 2*materialProp.E/materialProp.E*buildingProp.I[i]/(alpha_outrigger*b_total**2)                # m**2
+    for abschnittOut in buildingProp.posOut_abschnitt:
+        A_stütze = 2*E/E*I[abschnittOut]/(alpha_outrigger*b_total**2)                # m**2
         t_stütze = numpy.sqrt(A_stütze)*100                                         # cm
         buildingProp.t_stütze.append(t_stütze)
 
-        while t_stütze > randStütze.t[i]:                                           # Vergrößern von t wenn nötig
-            randStütze.t[i] += a                                                    # Ersetzen von t für ganzen Abschnitt
-        while t_stütze > eckStütze.t[i]:                                            # Vergrößern von t wenn nötig
-            eckStütze.t[i] += a                                                     # Ersetzen von t für ganzen Abschnitt
+        while t_stütze > randStütze.t[abschnittOut]:                                           # Vergrößern von t wenn nötig
+            randStütze.t[abschnittOut] += a                                                    # Ersetzen von t für ganzen Abschnitt
+        while t_stütze > eckStütze.t[abschnittOut]:                                            # Vergrößern von t wenn nötig
+            eckStütze.t[abschnittOut] += a                                                     # Ersetzen von t für ganzen Abschnitt
     
-    #print('t_stütze', buildingProp.t_stütze)
-    #print('Rand nach alpha', randStütze.t)
-    #print('Eck nach alpha', eckStütze.t)
 
 
-def outriggerStiffness(I_outriggerExakt, buildingProp):
+def outriggerStiffness(I_outrigger, buildingProp):
     """Berechnet die effektive Biegesteifigkeit des aktuellen Outriggers
-        :param I_outriggerExakt: Flächenträgheitsmoment des Outriggerquerschnitts [m**4]
-        :type I_outriggerExakt: float
+        :param I_outrigger: Flächenträgheitsmoment des Outriggerquerschnitts [m**4]
+        :type I_outrigger: float
         """
-    I_eff = I_outriggerExakt*(1+buildingProp.b_raster/buildingProp.b_raster)**3
 
-    return I_eff
+    b_raster = buildingProp.b_raster
+
+    I_outEff = I_outrigger*(1+b_raster/b_raster)**3
+
+    return I_outEff
 
 def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, materialProp):
     """Berechnet die Federsteifigkeiten der Outrigger
         """
     # Übergabe der Gebäudebreite
     b_total = buildingProp.b_total
+    n_abschnitt = buildingProp.n_abschnitt
+    n = buildingProp.n
+    x=buildingProp.x
+    h_geschoss = buildingProp.h_geschoss
 
-    I_effOutrigger = []
+    I_outEff = []
     K = []
     buildingProp.H_outrigger = []
 
@@ -217,120 +221,75 @@ def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, m
     A_eckStütze = []
     t_randStützeOutrigger = []                                                                          # cm
     t_eckStützeOutrigger = []
-    I_outriggerExakt = []                                                                               # m**4
+    I_outrigger = []                                                                               # m**4
+    A_stützen = []
+    K_stütze = []
+
+    # Berechnung der Federkonstante Stützen in Reihe
+    l_abschnitte = [n_abschnitt * h_geschoss] * x                                      # Liste mit Längen der Abschnitte
+    if x*n_abschnitt < n:
+        l_abschnitte.append(h_geschoss * (n - n_abschnitt * x))
+
+    for abschnitt in range(len(randStütze.t)):                                                             # Liste der Summe der Stützen je Abschnitt (von einer Seite: 3*Rand+2*Eck)
+        A_i_rand = (randStütze.t[abschnitt]/100)**2
+        A_i_eck = (eckStütze.t[abschnitt]/100)**2
+        A_i_ges = 3*A_i_rand + 2*A_i_eck
+        A_stützen.append(A_i_ges)
+
+    for posOut in buildingProp.posOut:
+        H = (buildingProp.n-posOut)*buildingProp.h_geschoss                                                 # Höhe des Outriggers
+        buildingProp.H_outrigger.append(H)
+
+    j = 0
+    l_berechnet = 0
+    for abschnittOut in buildingProp.posOut_abschnitt:
+        K_stütze_inv = 0
+        anzahl_abschnitte = len(randStütze.t)-abschnittOut
+        for abschnitte in range(anzahl_abschnitte-1):
+            abschnitt = len(l_abschnitte) -1 -abschnitte
+            K_stütze_inv += l_abschnitte[abschnitt] /(materialProp.E*A_stützen[abschnitt])
+            l_berechnet += l_abschnitte[abschnitt]
+        abschnitt = len(l_abschnitte) -(anzahl_abschnitte-1)
+        if abschnittOut < abschnitt:
+            l_übrig = buildingProp.H_outrigger[j] - l_berechnet
+            abschnitt -= 1
+            K_stütze_inv += l_übrig /(materialProp.E*A_stützen[abschnitt])
+        K_stütze.append(1/K_stütze_inv)
+        j += 1
+
+
+    # Alles folgende könnte in eine Schleife
 
     # Aktualisierung Querschnittswerte
-    for i in buildingProp.posOut:
-        n = i//buildingProp.n_abschnitt
-        t_randStützeOutrigger.append(randStütze.t[n])
-        t_eckStützeOutrigger.append(eckStütze.t[n])
-        t_outrigger = outrigger.t[i]
+    for posOut in buildingProp.posOut:
+        abschnittOut = posOut//buildingProp.n_abschnitt
+        #t_randStützeOutrigger.append(randStütze.t[abschnittOut])
+        #t_eckStützeOutrigger.append(eckStütze.t[abschnittOut])
+        t_outrigger = outrigger.t[posOut]
         calcProfileProp(outrigger, buildingProp, materialProp, t_outrigger)
-        I_aktuell = outrigger.I
-        I_outriggerExakt.append(I_aktuell)
+        I_outrigger.append(outrigger.I)
     
     # Berechnung einzelne Querschnitssflächen und Steifigkeiten
     for i in range(0,len(buildingProp.posOut)):
-        #I_effOutrigger_i = outriggerStiffness(I_outriggerExakt[i], buildingProp)
-        I_effOutrigger_i = I_outriggerExakt[i]      #Änderung
-        I_effOutrigger.append(I_effOutrigger_i)
-        buildingProp.I_effOutrigger = I_effOutrigger
-        calcProfileProp(randStütze, buildingProp, materialProp, t_randStützeOutrigger[i])
-        A_randStütze.append(randStütze.A_min)
-        calcProfileProp(eckStütze, buildingProp, materialProp, t_eckStützeOutrigger[i])
-        A_eckStütze.append(eckStütze.A_min)
+        I_outEff_i = outriggerStiffness(I_outrigger[i], buildingProp)
+        I_outEff.append(I_outEff_i)
+        buildingProp.I_effOutrigger = I_outEff
+        #calcProfileProp(randStütze, buildingProp, materialProp, t_randStützeOutrigger[i])
+        #A_randStütze.append(randStütze.A_min)
+        #calcProfileProp(eckStütze, buildingProp, materialProp, t_eckStützeOutrigger[i])
+        #A_eckStütze.append(eckStütze.A_min)
     
-    for i in buildingProp.posOut:
-        H = (buildingProp.n-i)*buildingProp.h_geschoss                                                 # Höhe des Outriggers
-        buildingProp.H_outrigger.append(H)
+    
 
     for i in range(0, len(buildingProp.posOut)):
-        I_outriggerGesamt = 2*I_effOutrigger[i]                                                         # 4 Outrigger in Windrichtung
-        A_stützen = 3*A_randStütze[i] + 2*A_eckStütze[i]
-        K_i = 12*materialProp.E*I_outriggerGesamt*A_stützen*b_total**2/(A_stützen*b_total**3+24*buildingProp.H_outrigger[i]*I_outriggerGesamt)
+        I_outriggerGesamt = 2*I_outEff[i]                                                         # 4 Outrigger in Windrichtung
+        #A_stützen = 3*A_randStütze[i] + 2*A_eckStütze[i]
+        #K_i = 12*materialProp.E*I_outriggerGesamt*A_stützen*b_total**2/(A_stützen*b_total**3+24*buildingProp.H_outrigger[i]*I_outriggerGesamt)
+        K_i = 12*materialProp.E*I_outriggerGesamt*K_stütze[i]*b_total**2/(K_stütze[i]*b_total**3+24*materialProp.E*I_outriggerGesamt)
         K.append(K_i)
 
     return K                                                                                            # kNm
 
-def calculateRatio(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze, i, n):
-    """Berechnet die aktuellen Steifigkeitsverhältnisse zwischen Kern und Outrigger und Kern und Stütze
-        :param i: aktuell zu berechnende Outriggerposition
-        :type i: int
-        :param n: Abschnitt der aktuell zu berechnenden Outriggerposition
-        :type n: int
-        """
-    b_total = buildingProp.b_total
-    h = buildingProp.h_total
-
-    t=kern.t[n]
-    calculations.calcProfileProp(kern, buildingProp, materialProp, t)
-    I_core = kern.I
-
-    t = outrigger.t[i]
-    calculations.calcProfileProp(outrigger, buildingProp, materialProp, t)
-    I_out = outrigger.I
-
-    #beta_ist = materialProp.E/materialProp.E*I_core*b_total/(4*I_out*h)
-
-    t = randStütze.t[n]
-    calculations.calcProfileProp(randStütze, buildingProp, materialProp, t)
-    A_rand = randStütze.A_min
-
-    t = eckStütze.t[n]
-    calculations.calcProfileProp(eckStütze, buildingProp, materialProp, t)
-    A_eck = eckStütze.A_min
-
-    #alpha_ist = 2*materialProp.E*I_core/(b_total**2*materialProp.E*(6*A_rand+4*A_eck))
-
-    return beta_ist, alpha_ist
-
-def controllStiffnesRatios(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze):
-    """Überprüft die aktuellen Steifigkeitsverhältnisse zwischen Kern und Outrigger und Kern und Stütze
-        Erhöht Dimension Outrigger/ Stütze / Kern bis gewolltes Verhältniss erreicht ist
-        """
-    a = materialProp.delta_t                                                        # cm
-    Verhältnis1 = [None]*buildingProp.x
-    Verhältnis2 = [None]*buildingProp.x
-    beta_outrigger = buildingProp.beta_outrigger
-    alpha_outrigger = buildingProp.alpha_outrigger#*10**(-3)
-    fehler = 0.4
-
-    for i in buildingProp.posOut:
-        n = i//buildingProp.n_abschnitt
-        beta_ist, alpha_ist = calculateRatio(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze, i, n)
-        delta_beta = beta_outrigger-beta_ist
-        delta_alpha = alpha_outrigger-alpha_ist
-
-        if abs(delta_beta) <= fehler:
-            Verhältnis1[n] = True
-        elif delta_beta > fehler:                                                   # Erhöhung Kern
-            kern.t[n] += a 
-            Verhältnis1[n] = False
-        elif delta_beta < -fehler:                                                  # Erhöhung Outrigger
-            outrigger.t[i] += a
-            Verhältnis1[n] = False
-
-            
-        if abs(delta_alpha) <= fehler:
-            Verhältnis2[n] = True   
-        elif delta_alpha > fehler:
-            kern.t[n] += a 
-            Verhältnis2[n] = False
-        elif delta_alpha < -fehler:
-            eckStütze.t[n] += a 
-            randStütze.t[n] += a
-            Verhältnis2[n] = False
-
-
-    Test = True
-
-    for i in buildingProp.posOut_abschnitt:
-        if Verhältnis1[i] == False:
-            Test = False
-        if Verhältnis2[i] == False:
-            Test = False
-
-    return Test
 
 def checkChange(buildingProp, materialProp, t_check_kern, t_check_eckstütze, t_check_randstütze, t_check_outrigger, t_check_belt, kern, eckStütze, randStütze, outrigger, belt):
     """Überprüft ob sich Dimensionen der Bauteile seit der letzten Iteration verändert haben
@@ -356,14 +315,14 @@ def checkChange(buildingProp, materialProp, t_check_kern, t_check_eckstütze, t_
         if abs(delta_randstütze) < fehler:
             Check_randstütze[i] = True
 
-    for i in buildingProp.posOut:
-        delta_outrigger = outrigger.t[i] - t_check_outrigger[i]
+    for posOut in buildingProp.posOut:
+        delta_outrigger = outrigger.t[posOut] - t_check_outrigger[posOut]
         if abs(delta_outrigger) < fehler:
             Check_outrigger.append(True)
         else:
             Check_outrigger.append(False)
 
-        delta_belt = belt.t[i] - t_check_belt[i]
+        delta_belt = belt.t[posOut] - t_check_belt[posOut]
         if abs(delta_belt) < fehler:
             Check_belt.append(True)
         else:
@@ -474,6 +433,8 @@ def bendingStiffnessModification(buildingProp, materialProp, kern, randStütze, 
     # Aktualisieren Outrigger und Stützen
     ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze)
 
+    # Aktualisierung K_Feder für fea?
+
     # Erneut GzT für aktualisierte QS?
 
 
@@ -492,9 +453,9 @@ def design(buildingProp,loads,materialProp,DataProp):                           
     arrangementOutrigger(buildingProp)
 
     # Gebäudegeometrie übergeben:
-    b_raster=buildingProp.b_raster
-    h_geschoss=buildingProp.h_geschoss
-    A=b_raster**2
+    b_raster = buildingProp.b_raster
+    h_geschoss = buildingProp.h_geschoss
+    A = b_raster**2
 
     # Tragwerksteile initiieren
     # mit Aussteifung
@@ -553,7 +514,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
 
         
         # Berechnung Steifigkeit des Kerns
-        buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)   # nur core, passt das?
+        buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
         
         # Berechnung/ Aktualisierung des Outriggers und der Stützen bezogen auf Steifigkeitsverhältnis zu Kern
         ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze)
@@ -585,29 +546,24 @@ def design(buildingProp,loads,materialProp,DataProp):                           
     
         # Auslesen Auflagerkraft an Feder
         buildingProp.moment_spring = []
-        #buildingProp.sigmaStütze_outrigger = []
         buildingProp.kraftStütze_outrigger = []                                         # Kraft durch Outrigger von oben nach unten
-        I_outrigger  = [None]*len(buildingProp.posOut)
-        I_outrigger2 = [None]*len(buildingProp.posOut)
+        I_outEff  = [None]*len(buildingProp.posOut)
 
-        for n, i in enumerate(buildingProp.posOut):
-            calcProfileProp(outrigger, buildingProp, materialProp, outrigger.t[i])
-            I_outrigger2[n] = outrigger.I
-            I_outrigger[n] = outrigger.I#outriggerStiffness(outrigger.I, buildingProp)              # m**4
+        for n, posOut in enumerate(buildingProp.posOut):
+            calcProfileProp(outrigger, buildingProp, materialProp, outrigger.t[posOut])
+            I_outEff[n] = outriggerStiffness(outrigger.I, buildingProp)              # m**4
 
         for i in range(0, len(buildingProp.posOut)):
             moment_spring = reactions[i+3]                                              # kNm
             buildingProp.moment_spring.append(moment_spring)
+
             n = buildingProp.posOut_abschnitt[i]                                        # Positionen von oben nach unten
-            A_stützen_ges = 6*(randStütze.t[n]/100)**2+4*(eckStütze.t[n]/100**2)
+            
+            A_stützen_ges = 6*(randStütze.t[n]/100)**2+4*(eckStütze.t[n]/100)**2
             H = buildingProp.H_outrigger[i]
-            Kraft_stütze = 3*moment_spring/buildingProp.K[i]*materialProp.E*A_stützen_ges*4*I_outrigger[i]*2*b_raster\
-                /(3*H*4*I_outrigger[i]+A_stützen_ges*(2*b_raster)**3)                       # kN        aus KV, ergibt höhere Last als I_outrigger,exakt und l = b_raster
-            #Kraft_stütze2 = 3*moment_spring/buildingProp.K[i]*materialProp.E*A_stützen_ges*4*I_outrigger2[i]\
-                #/(3*4*I_outrigger2[i]+A_stützen_ges*(b_raster)**2)
-            #Kraft_stütze_alternativ = moment_spring*2/buildingProp.b_total
-            #spannung_stütze = Kraft_stütze/A_stützen_ges                                # kN/m**2   Kraft/Fläche
-            #buildingProp.sigmaStütze_outrigger.append(spannung_stütze)
+            Kraft_stütze = 3*moment_spring/buildingProp.K[i]*materialProp.E*A_stützen_ges*4*I_outEff[i]*2*b_raster\
+                /(3*H*4*I_outEff[i]+A_stützen_ges*(2*b_raster)**3)                       # kN        aus KV, ergibt höhere Last als I_outrigger und l = b_raster
+            
             buildingProp.kraftStütze_outrigger.append(Kraft_stütze/10)                   # Kraft je Stütze
 
         
@@ -616,39 +572,29 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         #---------------------------------------------------------------------------------------------------
 
         # Nachweis Outrigger
+
         # Weglassen, da Beanspruchung nicht einfach betrachtbar
         # Wird als nachgewiesen angenommen
-
-        # Moment aus Feder in fea
-        #f_outrigger = 100*f
-        #for n,i in enumerate(buildingProp.posOut):
-            #M_max_outrigger = loads.gamma_w*reactions[n+3]
-            #sigma_outrigger = 2*f_outrigger
-            #while sigma_outrigger > f_outrigger:
-                #M_g = outrigger.t[i]/100*h_geschoss*materialProp.gamma*loads.gamma_g*b_raster**2/8
-                #calcProfileProp(outrigger, buildingProp, materialProp, outrigger.t[i])
-                #sigma_outrigger = (M_max_outrigger/4+M_g)/outrigger.W   #da 4 Outrigger je Richtung
-                #if sigma_outrigger > f_outrigger:
-                    #outrigger.t[i] += a
         
         
         # Nachweis Belt Truss
-        # Durchlaufträger von Eck- zu Eckstütze
-        # beansprucht durch Moment aus Auflagerkräften Stützen und Outrigger
-        # Mmax in 1. oder 2. Feld
+
+        # System: Durchlaufträger von Eck- zu Eckstütze, beansprucht durch Moment aus Auflagerkräften Stützen und Outrigger
+
         belt.t = [0] * buildingProp.n
         A_Out = []
     
-        for n,i in enumerate(buildingProp.posOut):
-            verdrehung = reactions[2+buildingProp.n_outrigger-n]//buildingProp.K[n]                         # Phi = M/K
-            A_Out.append(3/8*outrigger.t[i]/100*h_geschoss*materialProp.gamma*loads.gamma_g*b_raster+\
-                3*loads.gamma_w*materialProp.E*buildingProp.I_effOutrigger[n]*verdrehung/b_raster**2)       # für EG Outrigger
+        for n,posOut in enumerate(buildingProp.posOut):
+            A_Out.append(3/8*outrigger.t[posOut]/100*h_geschoss*materialProp.gamma*loads.gamma_g*b_raster+\
+                2.5*buildingProp.kraftStütze_outrigger[n]*loads.gamma_w)                                                       # Normalkraft auf 2,5 Stützen, da es zwei Outrigger je Seite gibt
 
-        for n,i in enumerate(buildingProp.posOut):
+        for n,posOut in enumerate(buildingProp.posOut):
             t = materialProp.t_min
+            sigma = 2*f
+
             M_belt_Out1 = 1/5*b_raster*A_Out[n]                                                             # M_max Feld 1
             M_belt_Out2 = 3/10*b_raster*A_Out[n]                                                            # M_max Feld 2
-            sigma = 2*f
+            
             while sigma > f:
                 M_belt_EG1 = 0.077*t/100*h_geschoss*materialProp.gamma*loads.gamma_g*b_raster**2            # kNm
                 M_belt_EG2 = 0.036*t/100*h_geschoss*materialProp.gamma*loads.gamma_g*b_raster**2            # kNm
@@ -656,46 +602,25 @@ def design(buildingProp,loads,materialProp,DataProp):                           
                 calcProfileProp(belt, buildingProp, materialProp, t)
                 sigma = M_max_belt/belt.W                                                                   # kN/m**2
                 t += a
-            belt.t[i] = t
+
+            belt.t[posOut] = t
+
+            # Belt Truss mindestens so dick wie Outrigger?
         
         buildingProp.t_belt_now = belt.t
         buildingProp.t_outrigger_now = outrigger.t
 
-        t_rand_preCalc = []
-        t_eck_preCalc = []
-
-        for i in buildingProp.posOut_abschnitt:
-            t_rand_preCalc.append(randStütze.t[i])
-            t_eck_preCalc.append(eckStütze.t[i])
-
-        #print('Rand vor Bemessung', t_rand_preCalc)
-        #print('Eck vor Bemessung', t_eck_preCalc)
 
         # Nachweis Stützen
         # Beanspruchung: Auflagerkraft Feder + Vertikallasten inkl aus Federn darüber
         calculations.calcElementWidth(randStütze,buildingProp,loads,materialProp,str_)
         calculations.calcElementWidth(eckStütze, buildingProp,loads,materialProp,str_)
-
-        t_rand_postCalc = []
-        t_eck_postCalc = []
-        for i in buildingProp.posOut_abschnitt:
-            t_rand_postCalc.append(randStütze.t[i])
-            t_eck_postCalc.append(eckStütze.t[i])
-
-        #print('Rand nach Bemessung', t_rand_postCalc)
-        #print('Eck nach Bemessung', t_eck_postCalc)
-        
-        
-
-        
+              
         # Nachweis Kern 
         # Beanspruchung: Momente aus fea + Vertikallasten
         calculations.calcElementWidth(kern, buildingProp,loads,materialProp,str_)
         
-        # Kontrolle beta_ist = beta_outrigger/alpha_ist = alpha_outrigger
-        # inkl. Erhöhen t mit Berücksichtigung Steifigkeitsverhältnis
-        #Test = controllStiffnesRatios(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze)
-
+        # Kontrolle Querschnittsänderung für Iterationsabbruch
         if buildingProp.Iteration_counter == 1:
             Test = False
         else:
@@ -712,9 +637,9 @@ def design(buildingProp,loads,materialProp,DataProp):                           
 
         t_check_outrigger = [0] * buildingProp.n
         t_check_belt = [0] * buildingProp.n
-        for i in buildingProp.posOut:
-            t_check_outrigger[i] = outrigger.t[i]
-            t_check_belt[i] = belt.t[i]
+        for posOut in buildingProp.posOut:
+            t_check_outrigger[posOut] = outrigger.t[posOut]
+            t_check_belt[posOut] = belt.t[posOut]
 
 
         if Test == True:
@@ -780,6 +705,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
     buildingProp.G_belt = []
     x = buildingProp.x
     n = buildingProp.n
+    
     for i in range(1, x+1):
         buildingProp.G_outrigger.append(4*outrigger.G[i*buildingProp.n_abschnitt-1])
         buildingProp.G_belt.append(belt.G[i*buildingProp.n_abschnitt-1])
@@ -829,10 +755,11 @@ def design(buildingProp,loads,materialProp,DataProp):                           
  
     # Überprüfen ob Stütze größer als erf für alpha ist (keine Erhöhung)
     buildingProp.alpha_outriggerFulfilled = True
-    for n,i in enumerate(buildingProp.posOut_abschnitt):
-        if randStütze.t[i] - a > buildingProp.t_stütze[n]:
+
+    for n,abschnittOut in enumerate(buildingProp.posOut_abschnitt):
+        if randStütze.t[abschnittOut] - a > buildingProp.t_stütze[n]:
             buildingProp.alpha_outriggerFulfilled = False
-        elif eckStütze.t[i] - a > buildingProp.t_stütze[n]:
+        elif eckStütze.t[abschnittOut] - a > buildingProp.t_stütze[n]:
             buildingProp.alpha_outriggerFulfilled = False
 
     print('Steifigkeitsverhältnis alpha zwischen Kern und Stützen ist ', buildingProp.alpha_outriggerFulfilled)
