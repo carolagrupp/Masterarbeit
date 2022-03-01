@@ -16,6 +16,7 @@
 # PyQt5 gui
 from matplotlib.pyplot import vlines, xlim, ylim
 from numpy.lib.function_base import append
+import numpy as np
 from Masterarbeit.pfh.building import buildingProp, loads, materialProp
 from PyQt5 import QtWidgets, uic
 from gui.mainWindow import Ui_MainWindow
@@ -63,6 +64,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Abschnitt Multiberechnung
         self.gui.comboBox_parameter.currentTextChanged.connect(self.fitUnits)
+        self.gui.comboBox_parameter_2.currentTextChanged.connect(self.fitUnits)
 
         # Abschnitt Gebäudegeometrie (Zusammenhänge des Tabs)
         self.gui.spinBox_h_geschoss.valueChanged.connect(self.calcTotalBuildingHeight) #aktualisiert die Gesamthöhe bei Änderung der Geschosshöhe
@@ -116,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Abschnitt Windkanaldaten
 
-        self.gui.checkBox_170_02.stateChanged.connect(self.activateWindkanal)
+        #self.gui.checkBox_170_02.stateChanged.connect(self.activateWindkanal)
         self.gui.comboBox_170_23.currentTextChanged.connect(self.calcAlpha_v)
         self.gui.comboBox_170_13.currentTextChanged.connect(self.updateGeometrie)
 
@@ -124,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.pushButton_einzelberechnung.clicked.connect(lambda: self.pushButton_einzelberechnung(buildingProp,materialProp,loads,DataProp))
         self.gui.pushButton_multiberechnung.clicked.connect(lambda: self.pushButton_multiberechnung(buildingProp,materialProp,loads,DataProp))
         self.gui.pushButton_multiberechnungParameter.clicked.connect(lambda: self.pushButton_multiberechnungParameter(buildingProp,materialProp,loads,DataProp))
+        self.gui.pushButton_multiberechnungParameter_2D.clicked.connect(lambda: self.pushButton_multiberechnungParameter_2D(buildingProp,materialProp,loads,DataProp))
 
         # Zum plotten: Plot bei Änderung
         # Einzelberechnung
@@ -137,6 +140,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.gui.comboBox_xAxis_251.currentTextChanged.connect(lambda: self.plotDeformationCurve(buildingProp))
         self.gui.comboBox_yAxis_252.currentTextChanged.connect(lambda: self.plotDeformationCurve(buildingProp))
+
+        self.gui.comboBox_xAxis_271.currentTextChanged.connect(lambda: self.plotAusnutzung(buildingProp, materialProp))
+        self.gui.comboBox_yAxis_272.currentTextChanged.connect(lambda: self.plotAusnutzung(buildingProp, materialProp))
 
         # Höhenvariation
         self.gui.comboBox_xAxis_311.currentTextChanged.connect(lambda: self.plotResourceAnalysis(buildingProp,materialProp))
@@ -157,6 +163,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Parametervariation
         self.gui.comboBox_xAxis_411.currentTextChanged.connect(lambda: self.plotParameterAnalysis(buildingProp, materialProp))
         self.gui.comboBox_yAxis_412.currentTextChanged.connect(lambda: self.plotParameterAnalysis(buildingProp, materialProp))
+
+        self.gui.comboBox_xAxis_414.currentTextChanged.connect(lambda: self.plotDeformation(buildingProp, materialProp))
+        self.gui.comboBox_yAxis_414.currentTextChanged.connect(lambda: self.plotDeformation(buildingProp, materialProp))
         
         self.gui.comboBox_xAxis_421.currentTextChanged.connect(lambda: self.plotOptimalParameter(buildingProp,materialProp))
         self.gui.comboBox_yAxis_422.currentTextChanged.connect(lambda: self.plotOptimalParameter(buildingProp,materialProp))
@@ -170,7 +179,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.comboBox_xAxis_451.currentTextChanged.connect(lambda: self.plotInfluenceOptimalParameter_m2(buildingProp,materialProp))
         self.gui.comboBox_yAxis_452.currentTextChanged.connect(lambda: self.plotInfluenceOptimalParameter_m2(buildingProp,materialProp))
         
-       
+        self.gui.comboBox_parameter.currentTextChanged.connect(lambda: self.checkIfPosOutVariing(buildingProp))
+        self.gui.comboBox_parameter_2.currentTextChanged.connect(lambda: self.checkIfPosOutVariing_2D(buildingProp))
+
+        self.gui.comboBox_darstellung_473.currentTextChanged.connect(lambda: self.plot3DParameter(buildingProp,materialProp))
+        self.gui.comboBox_zAxis_472.currentTextChanged.connect(lambda: self.plot3DParameter(buildingProp,materialProp))
+        
+        
         # Save values from selected PyQt5.QtWidgets
         # See qtHelpers for further details
         self.gui.actionSpeichern.triggered.connect(self.guiSaveState)
@@ -269,6 +284,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Multiberechnung (verschiedene Parametervariationen je nach Thematik):
     def fitUnits(self):
         parameter=self.gui.comboBox_parameter.currentText()
+        parameter2D = self.gui.comboBox_parameter_2.currentText()
 
         if parameter == 'Keiner':
             label=''
@@ -276,11 +292,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         else:
            self.gui.pushButton_multiberechnungParameter.setEnabled(True) 
+        
+        if parameter2D == 'Keiner':
+            label=''
+            self.gui.pushButton_multiberechnungParameter_2D.setEnabled(False)
+        
+        else:
+           self.gui.pushButton_multiberechnungParameter_2D.setEnabled(True)
 
         if parameter == 'Staffelung n_abschnitt' or parameter == 'Anzahl Stiele pro Raster (Framed Tube) n_stiele/b_raster':
             label='[-]'
             self.gui.spinBox_p_min.setMinimum(1)
             self.gui.spinBox_p_max.setMinimum(1)
+
+        elif parameter == 'Outriggeranordnung über die Höhe':
+            self.gui.spinBox_p_min.setMinimum(0)
+            self.gui.spinBox_p_max.setMaximum(1)
 
         else:
             self.gui.spinBox_p_min.setMinimum(0) #keine Variation der Staffelung
@@ -310,9 +337,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             label = '[-]'
         
+        if parameter == 'Outriggeranordnung über die Höhe':
+            label = '[Vorfaktor für Höhe ab Fußpunkt]'
 
         self.gui.label_p_min.setText(label)
         self.gui.label_p_max.setText(label)
+
+        if parameter2D == 'Steifigkeitsverhältnis Alpha und Beta (Outrigger)':
+            label = '[-]'
+        if parameter2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+            label = '[Vorfaktor für Höhe ab Fußpunkt]'
+
+        self.gui.label_p_min_1.setText(label)
+        self.gui.label_p_min_2.setText(label)
+        self.gui.label_p_max_1.setText(label)
+        self.gui.label_p_max_2.setText(label)
 
     # Geometrie         Funktionen für Geometrieberechnung
 
@@ -521,7 +560,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.label_212_07.setText(str(buildingProp.t_riegel))
         self.gui.label_212_08.setText(str(buildingProp.t_outrigger))
         self.gui.label_212_10.setText(str(buildingProp.t_belt))
-        self.gui.label_212_09.setText(str(buildingProp.eigenFrequenz))    
+        self.gui.label_212_09.setText(str(buildingProp.eigenFrequenz))
+        self.gui.label_212_11.setText(str(buildingProp.w*1000))
+        self.gui.label_212_12.setText(str(buildingProp.NW_maßgebend))
         
     
     # Plots:
@@ -824,6 +865,88 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.MplWidget_261.plotBarChart(y, xlabel=xlabel, ylabel=ylabel, title=title, legend=legend, xticklabels=xticklabels,
                                        annotations=annotations, annotations_position=annotations_position, xlim=xlim, ylim=ylim, dir_fileName=dir_fileName, vLines=None, savePlt=savePlt, saveTex=saveTex)
 
+    def plotAusnutzung(self, buildingProp, materialProp):
+
+        y=[]
+        if self.gui.comboBox_yAxis_232.currentText() == 'Gebäudehöhe':
+            if self.gui.comboBox_xAxis_271.currentText() == 'Belt':
+                for i in buildingProp.H_outrigger:
+                    y.append(i)
+                    y.append(i-buildingProp.h_geschoss)
+            else:
+                #y.append(buildingProp.h_total)
+                for i in range (0,len(buildingProp.I)):
+                    a=max(buildingProp.h_total-i*buildingProp.n_abschnitt*buildingProp.h_geschoss,0)
+                    y.append(a)
+                    a=max(buildingProp.h_total-(i+1)*buildingProp.n_abschnitt*buildingProp.h_geschoss,0)
+                    y.append(a)
+            ylabel = 'Höhe [m]'
+
+            
+        # X-Achse:
+        if self.gui.comboBox_xAxis_271.currentText() == 'Kern':
+            x = []
+            for i in buildingProp.sigma_kern:
+                x.append(i/materialProp.f)
+                x.append(i/materialProp.f)
+            
+            xlabel = 'Ausnutzungsgrad Kern'
+
+        if self.gui.comboBox_xAxis_271.currentText() == 'Innenstütze':
+            x = []
+            for i in buildingProp.sigma_innenStütze:
+                x.append(i/materialProp.f)
+                x.append(i/materialProp.f)
+            
+            xlabel = 'Ausnutzungsgrad Innenstütze'
+
+        if self.gui.comboBox_xAxis_271.currentText() == 'Eckstütze':
+            x = []
+            for i in buildingProp.sigma_eckStütze:
+                x.append(i/materialProp.f)
+                x.append(i/materialProp.f)
+            
+            xlabel = 'Ausnutzungsgrad Eckstütze'
+            
+        if self.gui.comboBox_xAxis_271.currentText() == 'Randstütze':
+            x = []
+            for i in buildingProp.sigma_randStütze:
+                x.append(i/materialProp.f)
+                x.append(i/materialProp.f)
+            
+            xlabel = 'Ausnutzungsgrad Randstütze'
+
+
+        if self.gui.comboBox_xAxis_271.currentText() == 'Belt':
+            x = []
+            for i in buildingProp.sigma_belt:
+                x.append(i/materialProp.f)
+                x.append(i/materialProp.f)
+            
+            xlabel = 'Ausnutzungsgrad Belt'
+
+        title = 'Ausnutzungsgrad über die Höhe'
+
+        title=None
+        #mpl='plotStyle_legendeRechts'
+        maxWert=1.0
+        minWert=0.8*min(x)
+        bereich=maxWert-minWert
+        xlim=[minWert-0.1*bereich,maxWert+0.1*bereich]
+
+        ylim = [0, buildingProp.h_total ]
+
+        legend = ['Ausnutzungsgrad nach GzT (Achtung ohne GzG)']
+
+        # Speichern als pdf_tex und als png:
+        # Change to current file location
+        os.chdir(os.path.dirname(sys.argv[0]))
+        dir_fileName = "Querschnitssausnutzung"
+        saveTex = False
+        savePlt = True
+        
+        self.gui.MplWidget_271.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
+                                      legend=legend, xlim=xlim, ylim = ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
 
     ####    Plots Multiberechnung:
 
@@ -1255,6 +1378,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     ### Parameteranalyse:
 
+    def checkIfPosOutVariing(self, buildingProp):
+        if self.gui.comboBox_parameter.currentText() == 'Outriggeranordnung über die Höhe':
+            buildingProp.varPosOut = True
+        else: 
+            buildingProp.varPosOut = False
+
+    def checkIfPosOutVariing_2D(self, buildingProp):
+        if self.gui.comboBox_parameter_2.currentText() == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+            buildingProp.varPosOut_2D = True
+        else: 
+            buildingProp.varPosOut_2D = False
+    
+
     def grenzeAlpha(self, buildingProp, materialProp):
         max_delta = 2*materialProp.delta_t
         alpha_1_max_stelle = 0
@@ -1307,6 +1443,78 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         grenze = buildingProp.multi_p[alpha_max_stelle]
         return grenze
             
+    def plotDeformation(self,buildingProp,materialProp):
+        # Y-Achse:
+        y3=[]
+        y2=[]
+        y1=[]
+
+        for i in range(0,len(buildingProp.multiPar_w)):
+                y3.append(buildingProp.multiPar_w_GA[i]*1000)
+                y2.append(buildingProp.multiPar_w_EI[i]*1000)
+                y1.append(buildingProp.multiPar_w[i]*1000)
+            
+        ylabel = 'Verformung [mm]'
+        # X-Achse:
+        x1=buildingProp.multi_p
+
+        if buildingProp.parameter=='Staffelung n_abschnitt':
+            xlabel='n_{abschnitt}'
+        if buildingProp.parameter=='Deckengewicht g_k1':
+            xlabel='g_{k1}'
+        if buildingProp.parameter=='Windlast q_b':
+            xlabel='q_b'
+        if buildingProp.parameter=='Gebäudeform psi_r':
+            xlabel='\psi_r'
+        if buildingProp.parameter == 'Anzahl Stiele pro Raster (Framed Tube) n_stiele/b_raster':
+            xlabel='n_{stiele}/b_{raster}'        
+        if buildingProp.parameter == 'Verformungsverhältnis w_EI/w_GA':
+            xlabel='w_{EI}/w_{GA}'
+        if buildingProp.parameter == 'Mindestwirksamkeit Framed Tube tube_wirksam':
+            xlabel='Zielwert tube_{wirksam}'
+        if buildingProp.parameter == 'Anzahl Outrigger':
+            xlabel = 'n_{Outrigger}'
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            xlabel = 'alpha_outrigger'
+            #Bestimmung wann alpha nicht mehr eingehalten (Differenz zwischen t_soll und t_rand größer als delta_t)
+            Grenze = self.grenzeAlpha(buildingProp, materialProp)
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
+            xlabel = 'beta_outrigger'
+
+        if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
+            xlabel = 'Outriggeranordnung über die Höhe: Position = xi*H'
+
+        # Legende:
+        legend = ['w','w_EI', 'w_GA']
+
+        title =None
+
+        mpl='plotStyle_plot2D'
+
+        maxWert=max(max(y1),max(y2),max(y3))
+        minWert=min(min(y1),min(y2),min(y3))
+        x=[x1,x1,x1]
+        y=[y1,y2,y3]
+        bereich=maxWert-minWert
+        ylim=[minWert-0.1*bereich,maxWert+0.1*bereich]
+        ylim=[min(y1),maxWert]
+
+        if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
+            vLines = [Grenze]
+            vTexts = ['Alpha bei Randstütze nicht mehr eingehalten']
+        else:
+            vLines=None
+            vTexts=None
+        
+
+        # Speichern:
+        os.chdir(os.path.dirname(sys.argv[0]))
+        dir_fileName = "Verformung nach Parameter"
+        saveTex = False
+        savePlt = True
+        
+        self.gui.MplWidget_412.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
+                                    legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
 
 
     def plotParameterAnalysis(self,buildingProp,materialProp):
@@ -1421,6 +1629,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             Grenze = self.grenzeAlpha(buildingProp, materialProp)
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             xlabel = 'beta_outrigger'
+        if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
+            xlabel = 'Outriggeranordnung über die Höhe: Position = xi*H'
         
         
         # Legende:
@@ -1531,6 +1741,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             ylabel = 'alpha_outrigger'
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             ylabel = 'beta_outrigger'
+        if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
+            xlabel = 'Outriggeranordnung über die Höhe: Position = xi*H'
         
         # X-Achse:
         if self.gui.comboBox_xAxis_421.currentText() == 'Gebäudehöhe':
@@ -1783,6 +1995,192 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.MplWidget_450.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
                                       legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
     
+    def plot3DParameter(self,buildingProp,materialProp):
+
+        if self.gui.comboBox_darstellung_473.currentText() == 'Scatter':
+
+            # Größe z array
+            #laenge = len(buildingProp.multi_p_1)
+
+            # Z-Achse:
+            #z=np.zeros((laenge,laenge))
+            z = []
+            
+            if self.gui.comboBox_zAxis_472.currentText() == 'Masse':
+
+                for i in range(0,len(buildingProp.multiPar_2D_G_decken)):
+                    z.append(buildingProp.multiPar_2D_G_decken[i]+buildingProp.multiPar_2D_G_total[i])
+                
+                #for zeile in range(0,laenge):
+                    #for spalte in range(0,laenge):
+                        #z[i][j]=buildingProp.multiPar_2D_G_decken[i][j]+buildingProp.multiPar_2D_G_total[i][j]
+                        #z_i = buildingProp.multiPar_2D_G_decken[zeile][spalte]+buildingProp.multiPar_2D_G_total[zeile][spalte]
+                        #z.append(z_i)
+                
+                zlabel = 'Masse [t]'
+
+            #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
+
+                #for i in range(0,len(buildingProp.multiPar_w)):
+                    #z.append(buildingProp.multiPar_w[i]*1000)
+                
+                #zlabel = 'Verformung [mm]'
+                
+
+            # Horizontale Achsen:
+            x=buildingProp.multi_p_1
+            y=buildingProp.multi_p_2
+
+            if buildingProp.parameter_2D == 'Steifigkeitsverhältnis Alpha und Beta (Outrigger)':
+                xlabel = 'alpha_outrigger'
+                ylabel = 'beta_outrigger'
+            if buildingProp.parameter_2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+                xlabel = 'Outriggerposition 1 = xi_1*H'
+                ylabel = 'Outriggerposition 2 = xi_2*H'
+            
+            
+            # Legende:
+            #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
+                #legend = ['w']
+            #else:
+            legend = ['Tragwerk inkl. Horizontallastabtrag']
+            title =None 
+            
+            mpl='plotStyle_plot2D'
+
+            #maxWert = z[0][0]
+            #minWert = z[0][0]
+
+            
+            #for i in range(0, laenge):
+                #for j in range(0,laenge):
+                    #if z[i][j]>maxWert:
+                        #maxWert = z[i][j]
+                    #if z[i][j]< minWert:
+                        #minWert = z[i][j]
+                        
+            maxWert_z=max(z)
+            minWert_z=min(z)
+            bereich_z=maxWert_z-minWert_z
+            zlim=[minWert_z-0.1*bereich_z,maxWert_z+0.1*bereich_z]
+            #zlim=[minWert_z,maxWert_z]
+
+            maxWert_x=max(x)
+            minWert_x=min(x)
+            bereich_x=maxWert_x-minWert_x
+            xlim = [minWert_x-0.1*bereich_x,maxWert_x+0.1*bereich_x]
+
+            maxWert_y=max(y)
+            minWert_y=min(y)
+            bereich_y=maxWert_y-minWert_y
+            ylim = [minWert_y-0.1*bereich_y,maxWert_y+0.1*bereich_y]
+            
+            
+            vLines=None
+            vTexts=None
+            
+
+            # Speichern:
+            os.chdir(os.path.dirname(sys.argv[0]))
+            dir_fileName = "Materialmenge nach Parameter"
+            saveTex = False
+            savePlt = True
+            
+            self.gui.MplWidget_470.plot3DScatter(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+                                        legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+        
+        if self.gui.comboBox_darstellung_473.currentText() == 'Oberfläche':
+
+            # Größe z array
+            laenge = int(np.sqrt(len(buildingProp.multi_p_1)))
+
+            # Z-Achse:
+            z=np.zeros((laenge,laenge))
+            
+            
+            if self.gui.comboBox_zAxis_472.currentText() == 'Masse':
+                j=0                
+                for zeile in range(0,laenge):
+                    for spalte in range(0,laenge):
+                        z[zeile][spalte] = buildingProp.multiPar_2D_G_decken[j]+buildingProp.multiPar_2D_G_total[j]
+                        j += 1
+                
+                zlabel = 'Masse [t]'
+
+            #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
+
+                #for i in range(0,len(buildingProp.multiPar_w)):
+                    #z.append(buildingProp.multiPar_w[i]*1000)
+                
+                #zlabel = 'Verformung [mm]'
+                
+
+            # Horizontale Achsen:
+            x = []
+            y = []
+            for i in range(0,laenge):
+                x.append(buildingProp.multi_p_1[laenge*i])
+                y.append(buildingProp.multi_p_2[i])
+
+
+            if buildingProp.parameter_2D == 'Steifigkeitsverhältnis Alpha und Beta (Outrigger)':
+                xlabel = 'alpha_outrigger'
+                ylabel = 'beta_outrigger'
+            if buildingProp.parameter_2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+                xlabel = 'Outriggerposition 1 = xi_1*H'
+                ylabel = 'Outriggerposition 2 = xi_2*H'
+            
+            
+            # Legende:
+            #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
+                #legend = ['w']
+            #else:
+            legend = ['Tragwerk inkl. Horizontallastabtrag']
+            title =None 
+            
+            mpl='plotStyle_plot2D'
+
+            maxWert_z = z[0][0]
+            minWert_z = z[0][0]
+
+            
+            for i in range(0, laenge):
+                for j in range(0,laenge):
+                    if z[i][j]>maxWert_z:
+                        maxWert_z = z[i][j]
+                    if z[i][j]< minWert_z:
+                        minWert_z = z[i][j]
+                        
+    
+            bereich_z=maxWert_z-minWert_z
+            zlim=[minWert_z-0.1*bereich_z,maxWert_z+0.1*bereich_z]
+            #zlim=[minWert_z,maxWert_z]
+
+            maxWert_x=max(x)
+            minWert_x=min(x)
+            bereich_x=maxWert_x-minWert_x
+            xlim = [minWert_x-0.1*bereich_x,maxWert_x+0.1*bereich_x]
+
+            maxWert_y=max(y)
+            minWert_y=min(y)
+            bereich_y=maxWert_y-minWert_y
+            ylim = [minWert_y-0.1*bereich_y,maxWert_y+0.1*bereich_y]
+            
+            
+            vLines=None
+            vTexts=None
+            
+
+            # Speichern:
+            os.chdir(os.path.dirname(sys.argv[0]))
+            dir_fileName = "Materialmenge nach Parameter"
+            saveTex = False
+            savePlt = True
+            
+            self.gui.MplWidget_470.plot3DSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+                                        legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+  
+
     #------------------------------------------------------------------------------------------
     # Berechnungen:
 
@@ -1819,25 +2217,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.progressBar.setValue(20)
 
         self.mainCalculation(buildingProp,loads,materialProp,DataProp)
-        self.gui.progressBar.setValue(40)
+        self.gui.progressBar.setValue(30)
 
         self.showProfiles(buildingProp)
-        self.gui.progressBar.setValue(50)
+        self.gui.progressBar.setValue(40)
 
         self.plotMassDistribution(buildingProp)
-        self.gui.progressBar.setValue(60)
+        self.gui.progressBar.setValue(50)
 
         self.plotStiffnessDistribution(buildingProp,materialProp)
-        self.gui.progressBar.setValue(70)
+        self.gui.progressBar.setValue(60)
         
         self.plotInternalForcesCurve(buildingProp,loads)
-        self.gui.progressBar.setValue(80)
+        self.gui.progressBar.setValue(70)
 
         self.plotDeformationCurve(buildingProp)
-        self.gui.progressBar.setValue(90)
+        self.gui.progressBar.setValue(80)
 
         
         self.plotalphaOutrigger(buildingProp)
+        self.gui.progressBar.setValue(90)
+
+        if buildingProp.tragwerk == 'Outrigger':
+            self.plotAusnutzung(buildingProp, materialProp)
         self.gui.progressBar.setValue(100)
 
 
@@ -1917,7 +2319,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             buildingProp.multi_eigenFrequenz.append(buildingProp.eigenFrequenz)
 
             if self.gui.comboBox_parameter.currentText()!='Keiner':     # Parametervariation
-                self.multiberechnungParameter(buildingProp,materialProp,loads)
+                self.multiberechnungParameter(buildingProp,materialProp,loads, DataProp)
 
                 index=buildingProp.multiPar_G_total.index(min(buildingProp.multiPar_G_total))
 
@@ -1973,6 +2375,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.multiberechnungParameter(buildingProp,materialProp,loads,DataProp)
 
         self.plotParameterAnalysis(buildingProp, materialProp)
+        self.gui.progressBar.setValue(80)
+        self.plotDeformation(buildingProp,materialProp)
+        self.gui.progressBar.setValue(100)
+
+    def pushButton_multiberechnungParameter_2D(self,buildingProp,materialProp,loads,DataProp):  # Parametervariation 2D
+        self.gui.progressBar.setValue(10)
+
+        self.submit_buildingProp(buildingProp)
+        self.submit_loads(loads, buildingProp)
+        self.submit_materialProp(materialProp)
+        self.gui.progressBar.setValue(20)
+
+        self.multiberechnungParameter2D(buildingProp,materialProp,loads,DataProp)
+
+        self.plot3DParameter(buildingProp,materialProp)
         self.gui.progressBar.setValue(100)
 
 
@@ -2005,6 +2422,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         buildingProp.multiPar_t_soll_4 = []
         buildingProp.multiPar_t_rand_4 = []
         buildingProp.multiPar_t_eck_4 = []
+
+        if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
+            if p_max > 1.0:
+                print(str('Die gewählte Outriggeranordnung ist nicht verfügbar. Bitte Zahlen zwischen 0 und 1 angeben!'))
+                quit()
+
+            if buildingProp.n_outrigger != 1:       # Esrtmal nur für einen Outrigger Optimierung
+                print(str('Die gewählte Outriggeranzahl ist nicht möglich. Bitte nur 1  Outriggerangeben!'))
+                quit()
         
         for i in range (0,varianten_p):
             # Verändern von n und den zugehörigen Variablen
@@ -2017,10 +2443,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 buildingProp.p=int(p_max-i*delta_p)
                 buildingProp.n_stiele=buildingProp.p
 
-            if buildingProp.parameter == 'Anzahl Outrigger':
+            elif buildingProp.parameter == 'Anzahl Outrigger':
                 buildingProp.p = int(p_max-i*delta_p)
                 buildingProp.n_outrigger = buildingProp.p
-
+                
             else:
                 buildingProp.p=p_max-i*delta_p
 
@@ -2053,6 +2479,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
                 buildingProp.beta_outrigger = buildingProp.p
+
+            if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
+                buildingProp.varPosOut = True
+                buildingProp.xi = buildingProp.p
 
             
             buildingProp.multi_p.append(buildingProp.p)
@@ -2091,6 +2521,93 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         buildingProp.multiPar_t_eck_4.append(buildingProp.t_eckStützen[posOut])
 
 
+    def multiberechnungParameter2D(self,buildingProp,materialProp,loads,DataProp):
+        p_min_1=self.gui.spinBox_p_min_1.value()
+        p_max_1=self.gui.spinBox_p_max_1.value()
+        p_min_2=self.gui.spinBox_p_min_2.value()
+        p_max_2=self.gui.spinBox_p_max_2.value()
+
+        varianten_p_2D=int(self.gui.spinBox_varianten_p_2.value())
+        delta_p_1=(p_max_1-p_min_1)/(varianten_p_2D-1)
+        delta_p_2=(p_max_2-p_min_2)/(varianten_p_2D-1)
+
+        buildingProp.parameter_2D=self.gui.comboBox_parameter_2.currentText()
+        
+
+        if buildingProp.tragwerk != 'Outrigger':
+            print(str('Das gewählte Aussteifungssystem kann hier nicht analysiert werden. Bitte Outrigger auswählen'))
+            quit()
+
+        if buildingProp.parameter_2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+            buildingProp.varPosOut_2D = True
+            if p_max_1 > 1.0 or p_max_2 >1.0:
+                print(str('Die gewählte Outriggeranordnung ist nicht verfügbar. Bitte Zahlen zwischen 0 und 1 angeben!'))
+                quit()
+
+            if buildingProp.n_outrigger == 3 or buildingProp.n_outrigger == 4 or buildingProp.n_outrigger == 1:
+                print(str('Die gewählte Outriggeranzahl ist nicht möglich. Bitte nur 2 Outrigger angeben!'))
+                quit()
+
+        buildingProp.multi_p_1=[]
+        buildingProp.multi_p_2=[]
+
+        for i in range (0,varianten_p_2D):
+            # Verändern von n und den zugehörigen Variablen
+            
+            buildingProp.p1=p_max_1-i*delta_p_1
+            
+
+            #G_aussteifung =[]
+            #G_außenStützen =[]
+            #G_innenStützen =[]
+            #G_total =[]
+            #G_decken =[]
+            #G_totalOhnePFH =[]
+            #w_EI =[]
+            #w_GA =[]
+            #w =[]
+
+            for j in range(0,varianten_p_2D):
+
+                buildingProp.p2=p_max_2-j*delta_p_2
+                
+
+                if buildingProp.parameter_2D == 'Steifigkeitsverhältnis Alpha und Beta (Outrigger)':
+                    buildingProp.alpha_outrigger = buildingProp.p1
+                    buildingProp.beta_outrigger = buildingProp.p2
+
+                if buildingProp.parameter_2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
+                    buildingProp.xi_1 = buildingProp.p1
+                    buildingProp.xi_2 = buildingProp.p2
+
+            
+                print('-------','p1:',buildingProp.p1,'p2:',buildingProp.p2,'-------')
+
+                self.mainCalculation(buildingProp,loads,materialProp,DataProp)
+
+                buildingProp.multi_p_1.append(buildingProp.p1)
+                buildingProp.multi_p_2.append(buildingProp.p2)
+
+                buildingProp.multiPar_2D_G_aussteifung.append(buildingProp.G_aussteifung[-1])
+                buildingProp.multiPar_2D_G_außenStützen.append(buildingProp.G_außenStützen[-1])
+                buildingProp.multiPar_2D_G_innenStützen.append(buildingProp.G_innenStützen[-1])
+                buildingProp.multiPar_2D_G_total.append(buildingProp.G_total[-1])
+                buildingProp.multiPar_2D_G_decken.append(buildingProp.G_decken)
+                buildingProp.multiPar_2D_G_totalOhnePFH.append(buildingProp.G_totalOhnePFH[-1])
+                #w_EI.append(buildingProp.w_EI[0])
+                #w_GA.append(buildingProp.w_GA[0])
+                #w.append(buildingProp.w)
+
+            #buildingProp.multiPar_2D_G_aussteifung.append(G_aussteifung)
+            #buildingProp.multiPar_2D_G_außenStützen.append(G_außenStützen)
+            #buildingProp.multiPar_2D_G_innenStützen.append(G_innenStützen)
+            #buildingProp.multiPar_2D_G_total.append(G_total)
+            #buildingProp.multiPar_2D_G_decken.append(G_decken)
+            #buildingProp.multiPar_2D_G_totalOhnePFH.append(G_totalOhnePFH)
+            #buildingProp.multiPar_2D_w_EI.append(w_EI)
+            #buildingProp.multiPar_2D_w_GA.append(w_GA)
+            #buildingProp.multiPar_2D_w.append(w)
+            
 
 
     # Übergabe der Werte in Objekte der Klassen buildingProp, loads und material:
@@ -2135,11 +2652,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         loads.wk = self.gui.spinBox_wk.value()
         loads.gamma_w = self.gui.spinBox_gamma_w.value()
         loads.GK = self.gui.spinBox_GK.value()
-        if self.gui.checkBox_170_02.isChecked():
-            loads.GK = int(self.gui.comboBox_170_23.currentText())
-            loads.alpha_v = self.gui.doubleSpinBox_170_33.value()
-            loads.v_bk = self.gui.doubleSpinBox_170_43.value()
-            loads.D = self.gui.doubleSpinBox_170_53.value()
+        #if self.gui.checkBox_170_02.isChecked():
+            #loads.GK = int(self.gui.comboBox_170_23.currentText())
+            #loads.alpha_v = self.gui.doubleSpinBox_170_33.value()
+            #loads.v_bk = self.gui.doubleSpinBox_170_43.value()
+            #loads.D = self.gui.doubleSpinBox_170_53.value()
             #loads.dynamicAnalysis = True
         loads.Psi_q = self.gui.spinBox_Psi_q.value()
         loads.Psi_w = self.gui.spinBox_Psi_w.value()

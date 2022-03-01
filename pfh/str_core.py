@@ -82,11 +82,11 @@ def design(buildingProp,loads,materialProp,DataProp):
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2
-    innenStütze=building.elements(A,0,'Stütze','Vollprofil')       # Einzugsfläche, Fassadenlänge, Typ, Profil
-    randStütze=building.elements(1/2*A,b_raster,'Stütze','Vollprofil')
-    eckStütze=building.elements(1/4*A,b_raster,'Stütze','Vollprofil')
-    kernOhnePFH=building.elements(8*A,0,'Kern ohne PFH','Kern')
-    kern=building.elements(8*A,0,'Kern','Kern')
+    innenStütze=building.elements(A,0,'Stütze','Vollprofil', 'innenStütze')       # Einzugsfläche, Fassadenlänge, Typ, Profil
+    randStütze=building.elements(1/2*A,b_raster,'Stütze','Vollprofil','randStütze')
+    eckStütze=building.elements(1/4*A,b_raster,'Stütze','Vollprofil', 'eckStütze')
+    kernOhnePFH=building.elements(8*A,0,'Kern ohne PFH','Kern', 'kernOhnePFH')
+    kern=building.elements(8*A,0,'Kern','Kern', 'kern')
 
     str_=str_core
 

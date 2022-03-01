@@ -99,6 +99,19 @@ class buildingProp():
         self.i_wechselNW='none'
 
         self.alpha_outriggerFulfilled = True
+        # 2D Parameteroptimierung
+        self.varPosOut = False
+        self.varPosOut_2D = False
+
+        self.multiPar_2D_G_aussteifung = []
+        self.multiPar_2D_G_außenStützen = []
+        self.multiPar_2D_G_innenStützen = []
+        self.multiPar_2D_G_total = []
+        self.multiPar_2D_G_decken = []
+        self.multiPar_2D_G_totalOhnePFH = []
+        self.multiPar_2D_w_EI = []
+        self.multiPar_2D_w_GA = []
+        self.multiPar_2D_w = []
 
         # Grundriss:
         # ES   RS   RS   RS   ES
@@ -314,9 +327,10 @@ class materialProp():
         #self.gamma=0 #[kN/m³]
 
 class elements():
-    def __init__(self,A_einzug,l_fassade,typ,profil):
+    def __init__(self,A_einzug,l_fassade,typ,profil, typGenau):
         # Werte werden nur zur Übersicht hier angegeben
         self.A_einzug=A_einzug #[m²]        #Eingabe in str_.design
         self.l_fassade=l_fassade #[m]
         self.typ=typ
+        self.typGenau = typGenau
         self.profil=profil

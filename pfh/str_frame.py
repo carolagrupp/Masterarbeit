@@ -182,18 +182,18 @@ def design(buildingProp,loads,materialProp,DataProp):
     b_raster=buildingProp.b_raster
     A=b_raster**2
     
-    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil')
+    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil', 'riegel')
     #stiel=building.elements(A,0,'Stiel_innen','Quadratisches Hohlprofil')
     #stiel_außen=building.elements(A/2,b_raster,'Stiel_außen','Quadratisches Hohlprofil')
-    innenStütze=building.elements(A,0,'Stiel_innen','Quadratisches Hohlprofil')       # Einzugsfläche, Fassadenlänge, Typ, Profil
-    randStütze=building.elements(1/2*A,b_raster,'Stiel_innen','Quadratisches Hohlprofil')#Randstütze in innerem Riegel
-    randStütze_außen=building.elements(1/2*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil')#Randstütze in äußerem Riegel
-    eckStütze=building.elements(1/4*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil')
+    innenStütze=building.elements(A,0,'Stiel_innen','Quadratisches Hohlprofil', 'innenStütze')       # Einzugsfläche, Fassadenlänge, Typ, Profil
+    randStütze=building.elements(1/2*A,b_raster,'Stiel_innen','Quadratisches Hohlprofil', 'randStütze')#Randstütze in innerem Riegel
+    randStütze_außen=building.elements(1/2*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil', 'randStütze_außen')#Randstütze in äußerem Riegel
+    eckStütze=building.elements(1/4*A,b_raster,'Stiel_außen','Quadratisches Hohlprofil', 'eckStütze')
 
-    riegelOhnePFH=building.elements(A,0,'Riegel ohne PFH','Rechteckiges Hohlprofil')
-    innenStützeOhnePFH=building.elements(A,0,'Stiel_innen ohne PFH','Quadratisches Hohlprofil')       # Einzugsfläche, Fassadenlänge, Typ, Profil
-    randStützeOhnePFH=building.elements(1/2*A,b_raster,'Stiel_außen ohne PFH','Quadratisches Hohlprofil')
-    eckStützeOhnePFH=building.elements(1/4*A,b_raster,'Stiel_außen ohne PFH','Quadratisches Hohlprofil')
+    riegelOhnePFH=building.elements(A,0,'Riegel ohne PFH','Rechteckiges Hohlprofil', 'riegelOhnePFH')
+    innenStützeOhnePFH=building.elements(A,0,'Stiel_innen ohne PFH','Quadratisches Hohlprofil', 'innenStützeOhnePFH')       # Einzugsfläche, Fassadenlänge, Typ, Profil
+    randStützeOhnePFH=building.elements(1/2*A,b_raster,'Stiel_außen ohne PFH','Quadratisches Hohlprofil', 'randStützeOhnePFH')
+    eckStützeOhnePFH=building.elements(1/4*A,b_raster,'Stiel_außen ohne PFH','Quadratisches Hohlprofil', 'eckStützeOhnePFH')
 
     str_= str_frame
 

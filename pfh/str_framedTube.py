@@ -247,11 +247,11 @@ def design(buildingProp,loads,materialProp,DataProp):
     A_stiele=buildingProp.b_total**2-(buildingProp.b_total-b_raster)**2
     n_stiele=buildingProp.n_stiele
     
-    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil')    # Einzugsfläche, Fassadenlänge, Typ, Profil
-    stiel=building.elements(A_stiele/(16*n_stiele),b_raster/n_stiele,'Stiel','Quadratisches Hohlprofil')
-    innenStütze=building.elements(A,0,'Stütze','Quadratisches Hohlprofil')
+    riegel=building.elements(A,0,'Riegel','Rechteckiges Hohlprofil', 'riegel')    # Einzugsfläche, Fassadenlänge, Typ, Profil
+    stiel=building.elements(A_stiele/(16*n_stiele),b_raster/n_stiele,'Stiel','Quadratisches Hohlprofil', 'stiel')
+    innenStütze=building.elements(A,0,'Stütze','Quadratisches Hohlprofil', 'innenStütze')
 
-    stielOhnePFH=building.elements(A_stiele/(16*n_stiele),b_raster/n_stiele,'Stütze','Quadratisches Hohlprofil')
+    stielOhnePFH=building.elements(A_stiele/(16*n_stiele),b_raster/n_stiele,'Stütze','Quadratisches Hohlprofil', 'stielOhnePFH')
 
     str_= str_framedTube
 

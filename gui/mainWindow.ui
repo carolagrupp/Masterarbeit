@@ -64,53 +64,6 @@
         <string>Eingangsparameter</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_100" stretch="5,5,5,0">
-          <property name="topMargin">
-           <number>1</number>
-          </property>
-          <item>
-           <widget class="QPushButton" name="pushButton_einzelberechnung">
-            <property name="text">
-             <string>Einzelberechnung</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_multiberechnung">
-            <property name="text">
-             <string>Berechnung mit Höhenvariation</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_multiberechnungParameter">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Berechnung mit Parametervariation</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QProgressBar" name="progressBar">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="value">
-             <number>0</number>
-            </property>
-            <property name="textVisible">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget_100">
           <property name="currentIndex">
@@ -120,12 +73,165 @@
            <attribute name="title">
             <string>Multiberechnung</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_16">
-            <item>
+           <layout class="QGridLayout" name="gridLayout_18">
+            <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_6">
-              <property name="verticalSpacing">
-               <number>30</number>
-              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_111_13">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Höhenvariation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_111_12">
+                <property name="text">
+                 <string>Maximale Gesamtstockwerksanzahl</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="label_112_12">
+                <property name="text">
+                 <string>n_min</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QSpinBox" name="spinBox_n_min">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>99</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QLabel" name="label_114_12">
+                <property name="text">
+                 <string>[-]</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_111_11">
+                <property name="text">
+                 <string>Minimale Gesamtstockwerksanzahl</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLabel" name="label_112_11">
+                <property name="text">
+                 <string>n_max</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QSpinBox" name="spinBox_n_max">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+                <property name="value">
+                 <number>100</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLabel" name="label_114_11">
+                <property name="text">
+                 <string>[-]</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_111_10">
+                <property name="text">
+                 <string>Anzahl Variationen</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLabel" name="label_112_10">
+                <property name="text">
+                 <string>varianten_n</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QSpinBox" name="spinBox_varianten_n">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="minimum">
+                 <number>2</number>
+                </property>
+                <property name="maximum">
+                 <number>99</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QLabel" name="label_114_10">
+                <property name="text">
+                 <string>[-]</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_27">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Parametervariation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Parameter</string>
+                </property>
+               </widget>
+              </item>
               <item row="5" column="2">
                <widget class="QComboBox" name="comboBox_parameter">
                 <item>
@@ -183,111 +289,27 @@
                   <string>Steifigkeitsverhältnis Beta (Outrigger)</string>
                  </property>
                 </item>
+                <item>
+                 <property name="text">
+                  <string>Outriggeranordnung über die Höhe</string>
+                 </property>
+                </item>
                </widget>
               </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_27">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_20">
                 <property name="text">
-                 <string>Parametervariation</string>
+                 <string>Minimalwert</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="label_112_10">
+              <item row="6" column="1">
+               <widget class="QLabel" name="label_112_15">
                 <property name="text">
-                 <string>varianten_n</string>
+                 <string>p_min</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QSpinBox" name="spinBox_n_min">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>99</number>
-                </property>
-                <property name="value">
-                 <number>10</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QSpinBox" name="spinBox_varianten_n">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>2</number>
-                </property>
-                <property name="maximum">
-                 <number>99</number>
-                </property>
-                <property name="value">
-                 <number>10</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_111_10">
-                <property name="text">
-                 <string>Anzahl Variationen</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="QLabel" name="label_114_12">
-                <property name="text">
-                 <string>[-]</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="label_112_11">
-                <property name="text">
-                 <string>n_max</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="label_22">
-                <property name="text">
-                 <string>Anzahl Variationen</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QSpinBox" name="spinBox_n_max">
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_111_11">
-                <property name="text">
-                 <string>Minimale Gesamtstockwerksanzahl</string>
                 </property>
                </widget>
               </item>
@@ -301,20 +323,20 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="label_18">
+              <item row="6" column="3">
+               <widget class="QLabel" name="label_p_min">
                 <property name="text">
-                 <string>Parameter</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="label_112_12">
-                <property name="text">
-                 <string>n_min</string>
+                 <string/>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="label_23">
+                <property name="text">
+                 <string>Maximalwert</string>
                 </property>
                </widget>
               </item>
@@ -328,36 +350,6 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="3">
-               <widget class="QLabel" name="label_p_max">
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="label_20">
-                <property name="text">
-                 <string>Minimalwert</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_111_13">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Höhenvariation</string>
-                </property>
-               </widget>
-              </item>
               <item row="7" column="2">
                <widget class="QDoubleSpinBox" name="spinBox_p_max">
                 <property name="alignment">
@@ -368,10 +360,27 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="3">
-               <widget class="QLabel" name="label_114_10">
+              <item row="7" column="3">
+               <widget class="QLabel" name="label_p_max">
                 <property name="text">
-                 <string>[-]</string>
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_22">
+                <property name="text">
+                 <string>Anzahl Variationen</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QLabel" name="label_112_13">
+                <property name="text">
+                 <string>varianten_p</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -397,15 +406,8 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_111_12">
-                <property name="text">
-                 <string>Maximale Gesamtstockwerksanzahl</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="3">
-               <widget class="QLabel" name="label_114_11">
+              <item row="8" column="3">
+               <widget class="QLabel" name="label_17">
                 <property name="text">
                  <string>[-]</string>
                 </property>
@@ -414,35 +416,74 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="label_23">
+              <item row="9" column="0">
+               <widget class="QLabel" name="label_29">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
-                 <string>Maximalwert</string>
+                 <string>2D - Parametervariation</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
-               <widget class="QLabel" name="label_112_15">
+              <item row="10" column="0">
+               <widget class="QLabel" name="label_19">
                 <property name="text">
-                 <string>p_min</string>
+                 <string>Parameter</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="2">
+               <widget class="QComboBox" name="comboBox_parameter_2">
+                <item>
+                 <property name="text">
+                  <string>Keiner</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Steifigkeitsverhältnis Alpha und Beta (Outrigger)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Outriggeranordnung über die Höhe für zwei Outrigger</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="11" column="0">
+               <widget class="QLabel" name="label_28">
+                <property name="text">
+                 <string>Minimalwert Parameter 1</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QLabel" name="label_112_18">
+                <property name="text">
+                 <string>p_min_1</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
-               <widget class="QLabel" name="label_112_13">
-                <property name="text">
-                 <string>varianten_p</string>
-                </property>
+              <item row="11" column="2">
+               <widget class="QDoubleSpinBox" name="spinBox_p_min_1">
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
+                <property name="maximum">
+                 <double>9999.989999999999782</double>
+                </property>
                </widget>
               </item>
-              <item row="6" column="3">
-               <widget class="QLabel" name="label_p_min">
+              <item row="11" column="3">
+               <widget class="QLabel" name="label_p_min_1">
                 <property name="text">
                  <string/>
                 </property>
@@ -451,8 +492,155 @@
                 </property>
                </widget>
               </item>
-              <item row="8" column="3">
-               <widget class="QLabel" name="label_17">
+              <item row="12" column="0">
+               <widget class="QLabel" name="label_31">
+                <property name="text">
+                 <string>Maximalwert Parameter 1</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QLabel" name="label_112_16">
+                <property name="text">
+                 <string>p_max_1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="2">
+               <widget class="QDoubleSpinBox" name="spinBox_p_max_1">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <double>9999.989999999999782</double>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="3">
+               <widget class="QLabel" name="label_p_max_1">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="0">
+               <widget class="QLabel" name="label_33">
+                <property name="text">
+                 <string>Minimalwert Parameter 2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="1">
+               <widget class="QLabel" name="label_112_19">
+                <property name="text">
+                 <string>p_min_2</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="2">
+               <widget class="QDoubleSpinBox" name="spinBox_p_min_2">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <double>9999.989999999999782</double>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="3">
+               <widget class="QLabel" name="label_p_min_2">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="0">
+               <widget class="QLabel" name="label_32">
+                <property name="text">
+                 <string>Maximalwert Parameter 2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="1">
+               <widget class="QLabel" name="label_112_20">
+                <property name="text">
+                 <string>p_max_2</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="2">
+               <widget class="QDoubleSpinBox" name="spinBox_p_max_2">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="maximum">
+                 <double>9999.989999999999782</double>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="3">
+               <widget class="QLabel" name="label_p_max_2">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="0">
+               <widget class="QLabel" name="label_30">
+                <property name="text">
+                 <string>Anzahl Variationen</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="1">
+               <widget class="QLabel" name="label_112_17">
+                <property name="text">
+                 <string>varianten_p</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="2">
+               <widget class="QDoubleSpinBox" name="spinBox_varianten_p_2">
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+                <property name="decimals">
+                 <number>0</number>
+                </property>
+                <property name="minimum">
+                 <double>2.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>99.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="3">
+               <widget class="QLabel" name="label_21">
                 <property name="text">
                  <string>[-]</string>
                 </property>
@@ -2473,9 +2661,6 @@
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
-                <property name="minimum">
-                 <double>0.500000000000000</double>
-                </property>
                 <property name="maximum">
                  <double>1000.000000000000000</double>
                 </property>
@@ -3436,6 +3621,66 @@
           </widget>
          </widget>
         </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="pushButton_einzelberechnung">
+            <property name="text">
+             <string>Einzelberechnung</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_multiberechnung">
+            <property name="text">
+             <string>Berechnung mit Höhenvariation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_multiberechnungParameter">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Berechnung mit Parametervariation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_multiberechnungParameter_2D">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Berechnung mit 2D-Parametervariation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="textVisible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="mainTab_200">
@@ -3464,33 +3709,27 @@
            <layout class="QGridLayout" name="gridLayout_12">
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_11">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_211_01">
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_211_02">
                 <property name="text">
-                 <string>Außenmaße Innenstützen [cm]:</string>
+                 <string>Außenmaße Randstützen [cm]:</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="label_212_01">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
+              <item row="2" column="1">
+               <widget class="QLabel" name="label_212_03">
                 <property name="text">
                  <string/>
-                </property>
-                <property name="scaledContents">
-                 <bool>true</bool>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_211_02">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_211_01">
                 <property name="text">
-                 <string>Außenmaße Randstützen [cm]:</string>
+                 <string>Außenmaße Innenstützen [cm]:</string>
                 </property>
                </widget>
               </item>
@@ -3511,37 +3750,36 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="label_212_03">
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_212_01">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_211_04">
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_211_10">
                 <property name="text">
-                 <string>Wanddicken Kern [cm]:</string>
+                 <string>Außenmaße Belt Truss [cm]:</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="label_212_04">
+              <item row="6" column="1">
+               <widget class="QLabel" name="label_212_07">
                 <property name="text">
                  <string/>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_211_05">
-                <property name="text">
-                 <string>Außenmaße Diagonale [cm]:</string>
                 </property>
                </widget>
               </item>
@@ -3562,13 +3800,10 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="1">
-               <widget class="QLabel" name="label_212_06">
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_211_05">
                 <property name="text">
-                 <string/>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <string>Außenmaße Diagonale [cm]:</string>
                 </property>
                </widget>
               </item>
@@ -3579,8 +3814,45 @@
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
-               <widget class="QLabel" name="label_212_07">
+              <item row="10" column="0">
+               <widget class="QLabel" name="label_211_09">
+                <property name="text">
+                 <string>Eigenfrequenz f [Hz]:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QLabel" name="label_212_09">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLabel" name="label_212_04">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QLabel" name="label_212_06">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QLabel" name="label_212_11">
                 <property name="text">
                  <string/>
                 </property>
@@ -3596,20 +3868,10 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
-               <widget class="QLabel" name="label_212_08">
+              <item row="12" column="0">
+               <widget class="QLabel" name="label_211_13">
                 <property name="text">
-                 <string/>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="label_211_10">
-                <property name="text">
-                 <string>Außenmaße Belt Truss [cm]:</string>
+                 <string>Maßgebender Nachweis:</string>
                 </property>
                </widget>
               </item>
@@ -3623,20 +3885,49 @@
                 </property>
                </widget>
               </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="label_211_09">
-                <property name="text">
-                 <string>Eigenfrequenz f [Hz]:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="1">
-               <widget class="QLabel" name="label_212_09">
+              <item row="7" column="1">
+               <widget class="QLabel" name="label_212_08">
                 <property name="text">
                  <string/>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="0">
+               <widget class="QLabel" name="label_211_11">
+                <property name="text">
+                 <string>Maximale Gesamtverformung [mm]:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QLabel" name="label_212_12">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_211_04">
+                <property name="text">
+                 <string>Wanddicken Kern [cm]:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QLabel" name="label_211_12">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Ergebnisse:</string>
                 </property>
                </widget>
               </item>
@@ -4055,6 +4346,111 @@
                   <item>
                    <property name="text">
                     <string>Querschnitssabmessungen Stützen in Abschnitten mit Outriggern</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="subTab_270">
+           <attribute name="title">
+            <string>Ausnutzungsgrad</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_17">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_270">
+              <item>
+               <widget class="MplWidget" name="MplWidget_271" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>480</width>
+                  <height>400</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_271">
+                <item>
+                 <widget class="QLabel" name="label_271">
+                  <property name="text">
+                   <string>X-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_xAxis_271">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="editable">
+                   <bool>false</bool>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Kern</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Innenstütze</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Randstütze</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Eckstütze</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Belt</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_272">
+                <item>
+                 <widget class="QLabel" name="label_272">
+                  <property name="text">
+                   <string>Y-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_yAxis_272">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="editable">
+                   <bool>false</bool>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Gebäudehöhe</string>
                    </property>
                   </item>
                  </widget>
@@ -4594,7 +4990,7 @@
                   </property>
                   <item>
                    <property name="text">
-                    <string>Variabler Parameter 2</string>
+                    <string>Variabler Parameter</string>
                    </property>
                   </item>
                  </widget>
@@ -4641,6 +5037,79 @@
                   <item>
                    <property name="text">
                     <string>Steifigkeitsverhältnis Alpha (Outrigger)</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_4">
+           <attribute name="title">
+            <string>Verformung</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_16">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_412">
+              <item>
+               <widget class="MplWidget" name="MplWidget_412" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>480</width>
+                  <height>400</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_416">
+                <item>
+                 <widget class="QLabel" name="label_415">
+                  <property name="text">
+                   <string>X-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_xAxis_414">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Variabler Parameter 2</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_417">
+                <item>
+                 <widget class="QLabel" name="label_417">
+                  <property name="text">
+                   <string>Y-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_yAxis_414">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Verformung</string>
                    </property>
                   </item>
                  </widget>
@@ -5003,6 +5472,115 @@
                   <item>
                    <property name="text">
                     <string>Primärenergiebedarfdifferenz</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_470">
+           <attribute name="title">
+            <string>2D Parameteranalyse</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_19">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="MplWidget" name="MplWidget_470" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>480</width>
+                  <height>400</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_471">
+                <item>
+                 <widget class="QLabel" name="label_471">
+                  <property name="text">
+                   <string>X-Achse/Y-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_xAxis_471">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Variable Parameter</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_472">
+                <item>
+                 <widget class="QLabel" name="label_472">
+                  <property name="text">
+                   <string>Z-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_zAxis_472">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Masse</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Verformung</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_473">
+                <item>
+                 <widget class="QLabel" name="label_473">
+                  <property name="text">
+                   <string>Darstellungsart</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_darstellung_473">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Scatter</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Oberfläche</string>
                    </property>
                   </item>
                  </widget>

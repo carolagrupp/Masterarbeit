@@ -147,11 +147,11 @@ def design(buildingProp,loads,materialProp,DataProp):
     # Elemente:
     b_raster=buildingProp.b_raster
     A=b_raster**2
-    innenStütze=building.elements(A,0,'Mittelstütze','Vollprofil')       # Einzugsfläche, Fassadenlänge, Typ, Profil
-    diagonale=building.elements(0,0,'Diagonale','Quadratisches Hohlprofil')
-    querstrebe=building.elements(0,0,'Querstrebe','Quadratisches Hohlprofil')
-    außenStütze=building.elements(A/2,b_raster,'Außenstütze','Quadratisches Hohlprofil')
-    außenStützeOhnePFH=building.elements(A/2,b_raster,'Außenstütze ohne PFH','Quadratisches Hohlprofil')
+    innenStütze=building.elements(A,0,'Mittelstütze','Vollprofil', 'innenStütze')       # Einzugsfläche, Fassadenlänge, Typ, Profil, genauer Typ
+    diagonale=building.elements(0,0,'Diagonale','Quadratisches Hohlprofil', 'diagonale')
+    querstrebe=building.elements(0,0,'Querstrebe','Quadratisches Hohlprofil', 'querstrebe')
+    außenStütze=building.elements(A/2,b_raster,'Außenstütze','Quadratisches Hohlprofil', 'außenStütze')
+    außenStützeOhnePFH=building.elements(A/2,b_raster,'Außenstütze ohne PFH','Quadratisches Hohlprofil', 'außenStützeOhnePFH')
 
     str_= str_bracedtube
 

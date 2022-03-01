@@ -105,6 +105,17 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
 
     buildingProp.z = z
     buildingProp.j = 0        #Iterationsparameter für Outrigger
+
+    if element.typ == 'Kern':
+        buildingProp.sigma_kern = []
+    elif element.typGenau == 'innenStütze':
+        buildingProp.sigma_innenStütze = []
+    elif element.typGenau == 'randStütze':
+        buildingProp.sigma_randStütze = []
+    elif element.typGenau == 'eckStütze':
+        buildingProp.sigma_eckStütze = []
+     
+    
     
     #Äußere Schleife: Wiederholen für alle Abschnitte
     for i in range(1,z):
@@ -127,7 +138,7 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         
         buildingProp.i_aktuell = i
         buildingProp.ErsteBerechnungSigma = True
-
+        
         if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True and element.typ == 'Stütze': # Dann t bereits vorhanden
             t = element.t[i-1]
 
@@ -156,8 +167,18 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
                 else:
                     t=t+a   #Erhöhen um delta_t
                 buildingProp.ErsteBerechnungSigma = False
-        
-        #Ng auf darunterliegendes Geschoss aus EG des Elements
+        # Belastung der Elements speichern
+        if buildingProp.tragwerk == 'Outrigger':
+            if element.typ == 'Kern':
+                buildingProp.sigma_kern.append(sigma)
+            elif element.typGenau == 'innenStütze':
+                buildingProp.sigma_innenStütze.append(sigma)
+            elif element.typGenau == 'randStütze':
+                buildingProp.sigma_randStütze.append(sigma)
+            elif element.typGenau == 'eckStütze':
+                buildingProp.sigma_eckStütze.append(sigma)
+
+        # Ng auf darunterliegendes Geschoss aus EG des Elements
         if i==x+1:
             Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
 
@@ -333,7 +354,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         buildingProp.mue.append(0)
 
     while w > loads.w_max:
-        str_.buildingStiffness(buildingProp,materialProp,element1,element2,element3,element4)        
+        str_.buildingStiffness(buildingProp,materialProp,element1,element2,element3,element4)
         
         # Maximale Verformung berechnen
         feModel = fea.feModel(buildingProp,loads,materialProp)
