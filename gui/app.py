@@ -2017,7 +2017,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         #z_i = buildingProp.multiPar_2D_G_decken[zeile][spalte]+buildingProp.multiPar_2D_G_total[zeile][spalte]
                         #z.append(z_i)
                 
-                zlabel = 'Masse [t]'
+                zlabel = 'Gesamtmasse [t]'
 
             #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
 
@@ -2086,8 +2086,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             saveTex = False
             savePlt = True
             
-            self.gui.MplWidget_470.plot3DScatter(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
-                                        legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+            #self.gui.MplWidget_470.plot3DScatter(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+                                        #legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
         
         if self.gui.comboBox_darstellung_473.currentText() == 'Oberfläche':
 
@@ -2105,12 +2105,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         z[zeile][spalte] = buildingProp.multiPar_2D_G_decken[j]+buildingProp.multiPar_2D_G_total[j]
                         j += 1
                 
-                zlabel = 'Masse [t]'
+                zlabel = 'Gesamtmasse [t]'
 
             #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
 
-                #for i in range(0,len(buildingProp.multiPar_w)):
-                    #z.append(buildingProp.multiPar_w[i]*1000)
+                #for zeile in range(0,laenge)):
+                    #for spalte in range(0,laenge):
+                        #z[zeile][spalte] = buildingProp.multiPar_w[j]*1000
+                        #j += 1
                 
                 #zlabel = 'Verformung [mm]'
                 
@@ -2135,10 +2137,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
                 #legend = ['w']
             #else:
-            legend = ['Tragwerk inkl. Horizontallastabtrag']
+            legend = None#['Tragwerk inkl. Horizontallastabtrag']
             title =None 
             
-            mpl='plotStyle_plot2D'
+            mpl='_3D'
 
             maxWert_z = z[0][0]
             minWert_z = z[0][0]
@@ -2177,8 +2179,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             saveTex = False
             savePlt = True
             
-            self.gui.MplWidget_470.plot3DSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
-                                        legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+            self.gui.MplWidget_470.plotSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+                                         legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
   
 
     #------------------------------------------------------------------------------------------
@@ -2210,6 +2212,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def pushButton_einzelberechnung(self,buildingProp,materialProp,loads,DataProp):
         self.gui.progressBar.setValue(10)
+
+        buildingProp.varPosOut_2D = False
 
         self.submit_buildingProp(buildingProp)
         self.submit_loads(loads, buildingProp)
@@ -2381,6 +2385,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def pushButton_multiberechnungParameter_2D(self,buildingProp,materialProp,loads,DataProp):  # Parametervariation 2D
         self.gui.progressBar.setValue(10)
+
+        self.checkIfPosOutVariing_2D(buildingProp)
 
         self.submit_buildingProp(buildingProp)
         self.submit_loads(loads, buildingProp)

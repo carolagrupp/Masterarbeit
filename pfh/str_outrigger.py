@@ -138,7 +138,7 @@ def arrangementOutrigger(buildingProp):
             buildingProp.posOut = []
 
         elif n_outrigger == 1:
-            buildingProp.posOut = [n-int(0.61*n)]
+            buildingProp.posOut = [n-int(0.61*n)]#[0] # ganz oben für Untersuchung[n-int(0.61*n)]
 
         elif n_outrigger == 2:
             buildingProp.posOut = [n-int(0.73*n), n-int(0.41*n) ]
@@ -561,7 +561,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
 
     # Schleifenbedingung initialisieren
     Tragfähigkeitsnachweis = False
-    t_check_eckstütze = []
+    #t_check_eckstütze = []
      
 
     while Tragfähigkeitsnachweis == False:
@@ -666,7 +666,17 @@ def design(buildingProp,loads,materialProp,DataProp):                           
             buildingProp.sigma_belt.append(sigma)
             belt.t[posOut] = t
 
-        
+        # Gleichsetzen der Beltdimension mit maximalem t des Abschnitts
+        for abschnitt in range(0, len(kern.t)):
+            t_max = 0
+            for i in range(0,len(buildingProp.posOut)):
+                if buildingProp.posOut_abschnitt[i] == abschnitt and belt.t[buildingProp.posOut[i]]>t_max:
+                    t_max = belt.t[buildingProp.posOut[i]]
+
+            for i in range(0,len(buildingProp.posOut)):
+                if buildingProp.posOut_abschnitt[i] == abschnitt:
+                    belt.t[buildingProp.posOut[i]] = t_max
+      
         buildingProp.t_belt_now = belt.t
         buildingProp.t_outrigger_now = outrigger.t
 
@@ -698,6 +708,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         # Kontrolle Querschnittsänderung für Iterationsabbruch
         if buildingProp.Iteration_counter == 1:
             Test = False
+            #Test = True #Für Vergleich ohne Iteration
         else:
             Test = checkChange(buildingProp, materialProp, t_check_kern, t_check_eckstütze, t_check_randstütze, t_check_outrigger, t_check_belt, kern, eckStütze, randStütze, outrigger, belt)    
 
