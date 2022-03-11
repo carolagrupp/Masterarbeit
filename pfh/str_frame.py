@@ -156,7 +156,7 @@ def buildingStiffness(buildingProp,materialProp,riegel,innenStütze,randStütze,
     buildingProp.GA_riegelGA=GA_riegelGA
     buildingProp.GA_stielGA=GA_stielGA
 
-def shearStiffnessModification (buildingProp,riegel,innenStütze,randStütze,eckStütze,delta_t):
+def shearStiffnessModification (buildingProp,materialProp,riegel,innenStütze,randStütze,eckStütze,delta_t):
     # Die Schubsteifigkeit wird immer vom schwächsten Element bestimmt - siehe Formel
 
     #wenn Stiel kleinere GAs verursacht

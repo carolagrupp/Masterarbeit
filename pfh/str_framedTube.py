@@ -198,7 +198,7 @@ def buildingStiffness(buildingProp,materialProp,riegel,stiel,element3,element4):
     buildingProp.GA=GA
 
 
-def shearStiffnessModification (buildingProp,riegel,stiel,element3,element4,delta_t):
+def shearStiffnessModification (buildingProp,materialProp,riegel,stiel,element3,element4,delta_t):
     # Die Schubsteifigkeit wird immer vom schwächsten Element bestimmt - siehe Formel
 
     d1=buildingProp.tube_d1

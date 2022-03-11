@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1187</width>
-    <height>847</height>
+    <width>1185</width>
+    <height>840</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -647,6 +647,27 @@
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
+               </widget>
+              </item>
+              <item row="16" column="0">
+               <widget class="QLabel" name="label_34">
+                <property name="text">
+                 <string>Tragfähigkeit bei Outriggertragwerk vernachlässigen</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="2">
+               <widget class="QComboBox" name="comboBox_Nachweis">
+                <item>
+                 <property name="text">
+                  <string>Nein</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Ja</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
@@ -4283,7 +4304,43 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_13">
             <item row="0" column="0">
-             <layout class="QVBoxLayout" name="verticalLayout_260">
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_263">
+                <item>
+                 <widget class="QLabel" name="label_263">
+                  <property name="text">
+                   <string>Alpha_ist Randstütze</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_264">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_264">
+                <item>
+                 <widget class="QLabel" name="label_265">
+                  <property name="text">
+                   <string>Alpha_ist Eckstütze</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_266">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
               <item>
                <widget class="MplWidget" name="MplWidget_261" native="true">
                 <property name="minimumSize">
@@ -5120,6 +5177,94 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_5">
+           <attribute name="title">
+            <string>Alpha_ist</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_20">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_512">
+              <item>
+               <widget class="MplWidget" name="MplWidget_512" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>480</width>
+                  <height>400</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_516">
+                <item>
+                 <widget class="QLabel" name="label_516">
+                  <property name="text">
+                   <string>X-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_xAxis_516">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Variabler Parameter 2</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_517">
+                <item>
+                 <widget class="QLabel" name="label_517">
+                  <property name="text">
+                   <string>Y-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_yAxis_517">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>alpha_ist Outrigger 1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>alpha_ist Outrigger 2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>alpha_ist Outrigger 3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>alpha_ist Outrigger 4</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="subTab_420">
            <attribute name="title">
             <string>Optimaler Parameterwert je Höhe</string>
@@ -5604,7 +5749,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1187</width>
+     <width>1185</width>
      <height>18</height>
     </rect>
    </property>

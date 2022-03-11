@@ -61,7 +61,11 @@ class buildingProp():
         self.multiPar_G_decken=[]
         self.multiPar_G_totalOhnePFH=[]
         self.multi_p=[]
+        self.multiPar_alpha_ist_rand=[]
+        self.multiPar_alpha_ist_eck=[]
         self.parameter=''
+
+        self.Nachweis_GZT = True
 
         self.multi_G_aussteifung_opt=[]
         self.multi_G_außenStützen_opt=[]

@@ -360,6 +360,17 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         feModel = fea.feModel(buildingProp,loads,materialProp)
         w_EI = fea.feModel.calcStaticWindloadDeflection(feModel)    #Angabe Liste jedes Geschoss
         
+        if buildingProp.Nachweis_GZT == False:
+            # Auslesen Biegemomente über die Höhe
+            moment = fea.feModel.calcBendingMoment(feModel)
+            
+            buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
+            
+            buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
+            for i in range(0,buildingProp.n):
+                bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
+                buildingProp.moment.append(bm_max)
+
         w_GA = calcShearDeformation(buildingProp, loads)
                
         w = w_EI[0] + w_GA[0]
@@ -371,7 +382,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
             str_.bendingStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
         
         if element2 != None and w > loads.w_max and w_EI[0] <= loads.w_verhältnis*w_GA[0]:       # Schubverfromung größer als erwünscht
-            str_.shearStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)
+            str_.shearStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
            
     buildingProp.w_EI=w_EI # Liste mit Werten an jedem Geschoss
     buildingProp.w_GA=w_GA # Liste mit Werten an jedem Geschoss
@@ -394,6 +405,17 @@ def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,
         
         # Knotenverformungen und Verformungsdifferenz berechnen
         feModel=fea.feModel(buildingProp,loads,materialProp)                    # Modell zu Ermitllung der Biegeverformung jedes Knotens
+        if buildingProp.Nachweis_GZT == False:
+            # Auslesen Biegemomente über die Höhe
+            moment = fea.feModel.calcBendingMoment(feModel)
+            
+            buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
+            
+            buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
+            for i in range(0,buildingProp.n):
+                bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
+                buildingProp.moment.append(bm_max)
+
         buildingProp.w_GA=calcShearDeformation(buildingProp, loads)             # Funktion zur Ermittlung des Schubverformung jedes Knotens
         Teta_i, w_EI_max = fea.feModel.calcInterstoryDrift(feModel,buildingProp)          # Funktion zur Ermitllung der Verfromungsdifferenz der Knoten aus Schub und Biegung
         
@@ -409,7 +431,7 @@ def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,
             str_.bendingStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
         
         if element2 != None and Teta_i > loads.maxTeta_i and w_EI_max <= loads.w_verhältnis*buildingProp.w_GA[0]:     # Schubverfromung an Gebäudespitze größer als erwünscht
-            str_.shearStiffnessModification(buildingProp,element1,element2,element3,element4,delta_t)
+            str_.shearStiffnessModification(buildingProp,materialProp,element1,element2,element3,element4,delta_t)
 
 
 def calcWeight(buildingProp, materialProp, element):

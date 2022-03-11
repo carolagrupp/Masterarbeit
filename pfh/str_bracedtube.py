@@ -133,7 +133,7 @@ def buildingStiffness(buildingProp,materialProp,diagonale,außenStützen,element
     buildingProp.GA=GA
 
 
-def shearStiffnessModification(buildingProp,diagonale,außenStützen,element3,element4,delta_t):
+def shearStiffnessModification(buildingProp,materialProp,diagonale,außenStützen,element3,element4,delta_t):
     
     diagonale.t = [element+delta_t for element in diagonale.t]
 
