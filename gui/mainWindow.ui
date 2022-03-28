@@ -4997,6 +4997,89 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_6">
+           <attribute name="title">
+            <string>Biegemoment</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_21">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_360">
+              <item>
+               <widget class="MplWidget" name="MplWidget_360" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>480</width>
+                  <height>400</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_361">
+                <item>
+                 <widget class="QLabel" name="label_361">
+                  <property name="text">
+                   <string>X-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_xAxis_361">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Gebäudehöhe</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Schlankheit</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Anzahl Stockwerke</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_362">
+                <item>
+                 <widget class="QLabel" name="label_362">
+                  <property name="text">
+                   <string>Y-Achse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_yAxis_362">
+                  <property name="minimumSize">
+                   <size>
+                    <width>420</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Maximales Biegemoment</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -5635,7 +5718,25 @@
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
-               <widget class="MplWidget" name="MplWidget_470" native="true">
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QLabel" name="label_475">
+                  <property name="text">
+                   <string>Tiefpunkt</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_476">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="DreiDMplWidget" name="Widget_470" native="true">
                 <property name="minimumSize">
                  <size>
                   <width>480</width>
@@ -5694,7 +5795,7 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Verformung</string>
+                    <string>Omega</string>
                    </property>
                   </item>
                  </widget>
@@ -5720,12 +5821,12 @@
                   </property>
                   <item>
                    <property name="text">
-                    <string>Scatter</string>
+                    <string>Oberfläche</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Oberfläche</string>
+                    <string>Scatter</string>
                    </property>
                   </item>
                  </widget>
@@ -5784,6 +5885,12 @@
    <class>MplWidget</class>
    <extends>QWidget</extends>
    <header>gui.mplwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DreiDMplWidget</class>
+   <extends>QWidget</extends>
+   <header>gui.dreidmplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

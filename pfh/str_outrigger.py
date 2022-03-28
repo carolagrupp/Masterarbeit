@@ -757,7 +757,28 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         
         
     print('Iterationsanzahl = ', buildingProp.Iteration_counter)
-        
+
+
+    # Erhöhen des Kerns wenn Alpha zu stark abweicht, so dass Alpha wieder eingehalten wird
+    # oder doch anderer Ablauf insgesamt
+    # erforderliches Flächenträgheitsmoment Kern 
+    buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
+    alpha_outrigger = buildingProp.alpha_outrigger
+    for abschnittOut in buildingProp.posOut_abschnitt:
+        A_randstütze = (randStütze.t[abschnittOut]/100)**2
+        A_eckstütze = (eckStütze.t[abschnittOut]/100)**2
+        alpha_ist_rand = 2*materialProp.E*buildingProp.I[abschnittOut]/(materialProp.E*A_randstütze*buildingProp.b_total**2)
+        alpha_ist_eck = 2*materialProp.E*buildingProp.I[abschnittOut]/(materialProp.E*A_eckstütze*buildingProp.b_total**2)
+        if alpha_outrigger-1 >alpha_ist_eck or alpha_outrigger-1 >alpha_ist_rand:
+            I_erf_rand = buildingProp.alpha_outrigger*materialProp.E*A_randstütze*buildingProp.b_total**2/(2*materialProp.E)
+            I_erf_eck = buildingProp.alpha_outrigger*materialProp.E*A_eckstütze*buildingProp.b_total**2/(2*materialProp.E)
+            I_erf = max(I_erf_eck, I_erf_rand)
+            while buildingProp.I[abschnittOut]<I_erf:
+                kern.t[abschnittOut] += materialProp.delta_t
+                buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
+            for abschnitt in range(abschnittOut+1,len(kern.t)):
+                if kern.t[abschnitt]<kern.t[abschnittOut]:
+                    kern.t[abschnitt] = kern.t[abschnittOut]
     
     # Gebäudenachweise:
     t0=kern.t[-1]                                                                   #Kerndicke ganz unten
@@ -873,7 +894,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
     buildingProp.querkraft = v                                  # kN
 
 
-    # Berechnen des Steifigkeitsverhältnis zwischen Kern und Stützen am Ende
+    # Berechnen des Steifigkeitsverhältnisses zwischen Kern und Stützen am Ende
     buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
     buildingProp.alpha_ist_rand = []
     buildingProp.alpha_ist_eck = []

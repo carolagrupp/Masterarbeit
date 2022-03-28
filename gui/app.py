@@ -162,6 +162,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.comboBox_xAxis_351.currentTextChanged.connect(lambda: self.plotEigenFrequency(buildingProp))
         self.gui.comboBox_yAxis_352.currentTextChanged.connect(lambda: self.plotEigenFrequency(buildingProp))
 
+        self.gui.comboBox_xAxis_361.currentTextChanged.connect(lambda: self.plotMoment(buildingProp))
+        self.gui.comboBox_yAxis_362.currentTextChanged.connect(lambda: self.plotMoment(buildingProp))
+
         # Parametervariation
         self.gui.comboBox_xAxis_411.currentTextChanged.connect(lambda: self.plotParameterAnalysis(buildingProp, materialProp))
         self.gui.comboBox_yAxis_412.currentTextChanged.connect(lambda: self.plotParameterAnalysis(buildingProp, materialProp))
@@ -823,7 +826,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Verformungen"
-        saveTex = False
+        saveTex = False #True
         savePlt = True
         
         self.gui.MplWidget_250.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
@@ -1293,6 +1296,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Legende:
         legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
         title =None     #'Kummulierter Resourcenverbrauch nach Lastabtrag pro Geschossfläche'
+
+        #für Pickle
+        #legend = ['Tragwerk inkl. Horizontallastabtrag']
+        #title = 'Outrigger'
         
         maxWert=max(max(y1),max(y2),max(y3))
         minWert=min(min(y1),min(y2),min(y3))
@@ -1322,18 +1329,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #y4=[1,2]
         #x4=[50,50]
+
+        #für Pickle
+        #x= x1
+        #y = y1
        
         x=[x1,x1,x1]
         y=[y1,y2,y3]
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "Ressourcen nach Lastabtrag und Höhe pro m2"
+        dir_fileName = "Ressourcen nach Lastabtrag und Höhe pro m2" #"plot_as_pickle_05" 
         saveTex = False
         savePlt = True
+        savePkl = False
         
         self.gui.MplWidget_340.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
-                                      legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+                                      legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex, savePkl=savePkl)
 
 
     def plotEigenFrequency(self,buildingProp):
@@ -1371,7 +1383,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel = 'Anzahl Stockwerke [-]'
         
         # Legende:
-        title = None    #'Eigenwerte nach Gebäudehöhe'
+        title = None #'Kerntragwerk'       #'Eigenwerte nach Gebäudehöhe'
         ylim=[]
 
         maxWert=max(y)
@@ -1386,12 +1398,60 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "Eigenfrequenz nach Höhe"
+        dir_fileName = "Eigenfrequenz nach Höhe"#"plot_as_pickle_01"  
         saveTex = False
         savePlt = True
+        savePkl = False #True
         
         self.gui.MplWidget_350.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
-                                      legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+                                      legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex,  savePkl=savePkl)
+    
+    def plotMoment(self,buildingProp):
+
+        # Y-Achse:       
+        if self.gui.comboBox_yAxis_362.currentText() == 'Maximales Biegemoment':
+            y=buildingProp.multi_moment
+                       
+            ylabel = 'M [MNm]'
+            legend=['Maximales Biegemoment']
+            
+
+        # X-Achse:
+        if self.gui.comboBox_xAxis_361.currentText() == 'Gebäudehöhe':
+            x=buildingProp.multi_h_total
+            xlabel = 'Höhe [m]'
+
+        if self.gui.comboBox_xAxis_361.currentText() == 'Schlankheit':
+            x=buildingProp.multi_schlankheit
+            xlabel = 'Schlankheit [h/b]'
+
+        if self.gui.comboBox_xAxis_361.currentText() == 'Anzahl Stockwerke':
+            x=buildingProp.multi_n
+            xlabel = 'Anzahl Stockwerke [-]'
+        
+        # Legende:
+        title = None # 'Outrigger'      #'Eigenwerte nach Gebäudehöhe'
+        ylim=[]
+
+        maxWert=max(y)
+        minWert=min(y)
+        bereich=maxWert-minWert
+        ylim=[max(minWert-0.1*bereich,0),maxWert]
+        #ylim=[.05,0.45]
+
+        mpl='plotStyle_plot2D_small'
+
+        #mpl='plotStyle_legendeRechts'
+
+        # Speichern:
+        os.chdir(os.path.dirname(sys.argv[0]))
+        dir_fileName =  "Biegemoment nach Höhe"# "plot_as_pickle_02"
+        saveTex = False
+        savePlt = True
+        savePkl = False #True
+        
+        self.gui.MplWidget_360.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
+                                      legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex,  savePkl=savePkl)
     
 
     ### Parameteranalyse:
@@ -1827,7 +1887,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             ylabel = 'beta_outrigger'
         if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
-            xlabel = 'Outriggeranordnung über die Höhe: Position = xi*H'
+            ylabel = 'Outriggeranordnung über die Höhe: Position = xi*H'
+
+
         
         # X-Achse:
         if self.gui.comboBox_xAxis_421.currentText() == 'Gebäudehöhe':
@@ -2171,7 +2233,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             saveTex = False
             savePlt = True
             
-            #self.gui.MplWidget_470.plot3DScatter(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+            #self.gui.Widget_470.plot3DScatter(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
                                         #legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
         
         if self.gui.comboBox_darstellung_473.currentText() == 'Oberfläche':
@@ -2192,6 +2254,43 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 zlabel = 'Gesamtmasse [t]'
 
+                # Minimum bestimmen
+                minWert = buildingProp.multiPar_2D_G_decken[0]+buildingProp.multiPar_2D_G_total[0]
+                x_min = buildingProp.multi_p_2[0]
+                y_min = buildingProp.multi_p_1[0]
+                for k in range(1, len(buildingProp.multiPar_2D_G_total)):
+                    masse = buildingProp.multiPar_2D_G_decken[k]+buildingProp.multiPar_2D_G_total[k]
+                    if  masse < minWert:
+                        minWert = masse
+                        x_min = buildingProp.multi_p_2[k]
+                        y_min = buildingProp.multi_p_1[k]
+                TP = [round(x_min,2), round(y_min,2), round(minWert,2)]
+                # Übergebe Koordinaten
+                self.gui.label_476.setText(str(TP))
+
+            if self.gui.comboBox_zAxis_472.currentText() == 'Omega':
+                j=0
+                for zeile in range(0,laenge):
+                    for spalte in range(0,laenge):
+                        z[zeile][spalte] = buildingProp.multi_p_2[j]/(12*(1+buildingProp.multi_p_1[j]))
+                        j += 1
+
+                zlabel = 'Omega'
+
+                # Minimum bestimmen
+                minWert = buildingProp.multiPar_2D_G_decken[0]+buildingProp.multiPar_2D_G_total[0]
+                x_min = buildingProp.multi_p_2[0]
+                y_min = buildingProp.multi_p_1[0]
+                for k in range(1, len(buildingProp.multiPar_2D_G_total)):
+                    omega = buildingProp.multi_p_2[k]/(12*(1+buildingProp.multi_p_1[k]))
+                    if  omega < minWert:
+                        minWert = omega
+                        x_min = buildingProp.multi_p_2[k]
+                        y_min = buildingProp.multi_p_1[k]
+                TP = [round(x_min,2), round(y_min,2), round(minWert,2)]
+                # Übergebe Koordinaten
+                self.gui.label_476.setText(str(TP))
+
             #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
 
                 #for zeile in range(0,laenge)):
@@ -2206,13 +2305,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             x = []
             y = []
             for i in range(0,laenge):
-                x.append(buildingProp.multi_p_1[laenge*i])
-                y.append(buildingProp.multi_p_2[i])
+                y.append(buildingProp.multi_p_1[laenge*i])
+                x.append(buildingProp.multi_p_2[i])
 
 
             if buildingProp.parameter_2D == 'Steifigkeitsverhältnis Alpha und Beta (Outrigger)':
-                xlabel = 'alpha_outrigger'
-                ylabel = 'beta_outrigger'
+                ylabel = 'alpha_outrigger'
+                xlabel = 'beta_outrigger'
             if buildingProp.parameter_2D == 'Outriggeranordnung über die Höhe für zwei Outrigger':
                 xlabel = 'Outriggerposition 1 = xi_1*H'
                 ylabel = 'Outriggerposition 2 = xi_2*H'
@@ -2264,7 +2363,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             saveTex = False
             savePlt = True
             
-            self.gui.MplWidget_470.plotSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+            #self.gui.MplWidget_470.plotSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
+                                         #legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
+  
+            self.gui.Widget_470.plot3DSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
                                          legend=legend, xlim = xlim, ylim = ylim, zlim=zlim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
   
 
@@ -2326,7 +2428,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if buildingProp.tragwerk == 'Outrigger':
             self.plotalphaOutrigger(buildingProp)
             self.gui.progressBar.setValue(90)
-            self.plotAusnutzung(buildingProp, materialProp)
+            if buildingProp.Nachweis_GZT == True:
+                self.plotAusnutzung(buildingProp, materialProp)
         self.gui.progressBar.setValue(100)
 
 
@@ -2355,6 +2458,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         buildingProp.multi_G_decken=[]
         buildingProp.multi_G_totalOhnePFH=[]
         buildingProp.multi_eigenFrequenz=[]
+        buildingProp.multi_moment = []
 
         buildingProp.multi_G_aussteifung_opt=[]
         buildingProp.multi_G_außenStützen_opt=[]
@@ -2405,6 +2509,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             buildingProp.multi_eigenFrequenz.append(buildingProp.eigenFrequenz)
 
+            if buildingProp.tragwerk == 'Outrigger':
+                momentmax=0
+                for i in range(0,len(buildingProp.moment)):
+                    if buildingProp.moment[i]>momentmax:
+                        momentmax = buildingProp.moment[i]
+                buildingProp.multi_moment.append(momentmax)
+            else:
+                buildingProp.multi_moment.append(loads.M[-1])
+
             if self.gui.comboBox_parameter.currentText()!='Keiner':     # Parametervariation
                 self.multiberechnungParameter(buildingProp,materialProp,loads, DataProp)
 
@@ -2441,6 +2554,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui.progressBar.setValue(70)
         self.plotEigenFrequency(buildingProp)
         self.gui.progressBar.setValue(75)
+        self.plotMoment(buildingProp)
+        self.gui.progressBar.setValue(80)
         
         if self.gui.comboBox_parameter.currentText()!='Keiner':
             self.plotOptimalParameter(buildingProp,materialProp)
@@ -2626,7 +2741,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         buildingProp.multiPar_t_rand_4.append(buildingProp.t_randStützen[posOut])
                         buildingProp.multiPar_t_eck_4.append(buildingProp.t_eckStützen[posOut])
 
-
     def multiberechnungParameter2D(self,buildingProp,materialProp,loads,DataProp):
         p_min_1=self.gui.spinBox_p_min_1.value()
         p_max_1=self.gui.spinBox_p_max_1.value()
@@ -2653,6 +2767,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if buildingProp.n_outrigger == 3 or buildingProp.n_outrigger == 4 or buildingProp.n_outrigger == 1:
                 print(str('Die gewählte Outriggeranzahl ist nicht möglich. Bitte nur 2 Outrigger angeben!'))
                 quit()
+
 
         buildingProp.multi_p_1=[]
         buildingProp.multi_p_2=[]
