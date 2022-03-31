@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1185</width>
-    <height>840</height>
+    <width>1091</width>
+    <height>974</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -90,9 +90,9 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="label_111_12">
+               <widget class="QLabel" name="label_111_11">
                 <property name="text">
-                 <string>Maximale Gesamtstockwerksanzahl</string>
+                 <string>Minimale Gesamtstockwerksanzahl</string>
                 </property>
                </widget>
               </item>
@@ -130,9 +130,9 @@
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QLabel" name="label_111_11">
+               <widget class="QLabel" name="label_111_12">
                 <property name="text">
-                 <string>Minimale Gesamtstockwerksanzahl</string>
+                 <string>Maximale Gesamtstockwerksanzahl</string>
                 </property>
                </widget>
               </item>
@@ -765,7 +765,7 @@
                  <set>Qt::AlignCenter</set>
                 </property>
                 <property name="maximum">
-                 <number>4</number>
+                 <number>2</number>
                 </property>
                 <property name="value">
                  <number>0</number>
@@ -3967,7 +3967,7 @@
                <widget class="MplWidget" name="MplWidget_220" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4057,7 +4057,7 @@
                <widget class="MplWidget" name="MplWidget_230" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4140,7 +4140,7 @@
                <widget class="MplWidget" name="MplWidget_240" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4223,7 +4223,7 @@
                <widget class="MplWidget" name="MplWidget_250" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4345,7 +4345,7 @@
                <widget class="MplWidget" name="MplWidget_261" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4424,7 +4424,7 @@
                <widget class="MplWidget" name="MplWidget_271" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4543,7 +4543,7 @@
                <widget class="MplWidget" name="MplWidget_310" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4636,7 +4636,7 @@
                <widget class="MplWidget" name="MplWidget_320" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4729,7 +4729,7 @@
                <widget class="MplWidget" name="MplWidget_330" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4822,7 +4822,7 @@
                <widget class="MplWidget" name="MplWidget_340" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -4915,7 +4915,7 @@
                <widget class="MplWidget" name="MplWidget_350" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5008,7 +5008,7 @@
                <widget class="MplWidget" name="MplWidget_360" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5105,7 +5105,7 @@
                <widget class="MplWidget" name="MplWidget_410" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5198,7 +5198,7 @@
                <widget class="MplWidget" name="MplWidget_412" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5271,7 +5271,7 @@
                <widget class="MplWidget" name="MplWidget_512" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5359,7 +5359,7 @@
                <widget class="MplWidget" name="MplWidget_420" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5442,7 +5442,7 @@
                <widget class="MplWidget" name="MplWidget_430" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5535,7 +5535,7 @@
                <widget class="MplWidget" name="MplWidget_440" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5628,7 +5628,7 @@
                <widget class="MplWidget" name="MplWidget_450" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5739,7 +5739,7 @@
                <widget class="DreiDMplWidget" name="Widget_470" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>480</width>
+                  <width>400</width>
                   <height>400</height>
                  </size>
                 </property>
@@ -5850,8 +5850,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1185</width>
-     <height>18</height>
+     <width>1091</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSpeichern">

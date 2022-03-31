@@ -108,13 +108,15 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
 
     if element.typ == 'Kern':
         buildingProp.sigma_kern = []
+        buildingProp.NW_kern = []
     elif element.typGenau == 'innenStütze':
         buildingProp.sigma_innenStütze = []
     elif element.typGenau == 'randStütze':
         buildingProp.sigma_randStütze = []
+        buildingProp.NW_randStütze = []
     elif element.typGenau == 'eckStütze':
         buildingProp.sigma_eckStütze = []
-     
+        buildingProp.NW_eckStütze = []  
     
     
     #Äußere Schleife: Wiederholen für alle Abschnitte
@@ -139,11 +141,10 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         buildingProp.i_aktuell = i
         buildingProp.ErsteBerechnungSigma = True
         
-        if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True and element.typ == 'Stütze': # Dann t bereits vorhanden
-            t = element.t[i-1]
+        if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True: 
+            if element.typ == 'Stütze' or element.typ == 'Kern':        # Dann t bereits vorhanden
+                t = element.t[i-1]
 
-        # Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
-        while sigma > f:
             calcProfileProp(element,buildingProp,materialProp,t)        #A, I und W für aktuelles t
             if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True:
                 buildingProp.outriggerAbschnitt = False
@@ -159,34 +160,85 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
             sigma_Mmax=M_max/element.W+N_kombi/element.A_min
             
             sigma=max(sigma_Nmax,sigma_Mmax)
-         
-            if sigma>f:     #Querschnittsvergrößerung
-                if buildingProp.tragwerk=='Framed Tube' and element.typ=='Stiel':
-                    buildingProp.riegel.t[i-1],t = str_.interiaMomentModification(buildingProp,buildingProp.riegel.t[i-1],t,a)
-                    
-                else:
-                    t=t+a   #Erhöhen um delta_t
-                buildingProp.ErsteBerechnungSigma = False
-        # Belastung der Elements speichern
-        if buildingProp.tragwerk == 'Outrigger':
-            if element.typ == 'Kern':
-                buildingProp.sigma_kern.append(sigma)
-            elif element.typGenau == 'innenStütze':
-                buildingProp.sigma_innenStütze.append(sigma)
-            elif element.typGenau == 'randStütze':
-                buildingProp.sigma_randStütze.append(sigma)
-            elif element.typGenau == 'eckStütze':
-                buildingProp.sigma_eckStütze.append(sigma)
+            # Belastung des Elements speichern
+            if buildingProp.tragwerk == 'Outrigger':
+                if element.typ == 'Kern':
+                    buildingProp.sigma_kern.append(sigma)
+                elif element.typGenau == 'innenStütze':
+                    buildingProp.sigma_innenStütze.append(sigma)
+                elif element.typGenau == 'randStütze':
+                    buildingProp.sigma_randStütze.append(sigma)
+                elif element.typGenau == 'eckStütze':
+                    buildingProp.sigma_eckStütze.append(sigma)
 
-        # Ng auf darunterliegendes Geschoss aus EG des Elements
-        if i==x+1:
-            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
+            # Ng auf darunterliegendes Geschoss aus EG des Elements
+            if i==x+1:
+                Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
+
+            else:
+                Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*n_abschnitt*h_geschoss*gamma_g
+
+            if sigma > f:
+                NW = False
+            else: 
+                NW = True
+            
+            if element.typ == 'Kern':
+                buildingProp.NW_kern.append(NW)
+            elif element.typGenau == 'randStütze':
+                buildingProp.NW_randStütze.append(NW)
+            elif element.typGenau == 'eckStütze':
+                buildingProp.NW_eckStütze.append(NW)
+
+            b = element.t 
 
         else:
-            Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*n_abschnitt*h_geschoss*gamma_g
-       
-        b.append(t)             # t in Liste übergeben
-      
+
+            # Beginn der inneren Schleife: Ermitteln von t in dem jeweiligen Abschnitt
+            while sigma > f:
+                calcProfileProp(element,buildingProp,materialProp,t)        #A, I und W für aktuelles t
+                if buildingProp.tragwerk == 'Outrigger' and buildingProp.Iteration == True:
+                    buildingProp.outriggerAbschnitt = False
+                    buildingProp.anzahlOutInAbschnitt = 0
+                    for k in buildingProp.posOut_abschnitt:
+                        if i == k+1:
+                            buildingProp.anzahlOutInAbschnitt += 1
+                            buildingProp.outriggerAbschnitt = True
+                N_max,N_kombi,M_max,M_kombi=str_.calcElementLoads(buildingProp,loads,materialProp,element,s,alpha,Ng_darüberliegend,t)
+                
+                
+                sigma_Nmax=M_kombi/element.W+N_max/element.A_min     # Abdeckung beider Kombinationen aus den veränderlichen Lasten durch Wind und Verkehr
+                sigma_Mmax=M_max/element.W+N_kombi/element.A_min
+                
+                sigma=max(sigma_Nmax,sigma_Mmax)
+            
+                if sigma>f:     #Querschnittsvergrößerung
+                    if buildingProp.tragwerk=='Framed Tube' and element.typ=='Stiel':
+                        buildingProp.riegel.t[i-1],t = str_.interiaMomentModification(buildingProp,buildingProp.riegel.t[i-1],t,a)
+                        
+                    else:
+                        t=t+a   #Erhöhen um delta_t
+                    buildingProp.ErsteBerechnungSigma = False
+            # Belastung der Elements speichern
+            if buildingProp.tragwerk == 'Outrigger':
+                if element.typ == 'Kern':
+                    buildingProp.sigma_kern.append(sigma)
+                elif element.typGenau == 'innenStütze':
+                    buildingProp.sigma_innenStütze.append(sigma)
+                elif element.typGenau == 'randStütze':
+                    buildingProp.sigma_randStütze.append(sigma)
+                elif element.typGenau == 'eckStütze':
+                    buildingProp.sigma_eckStütze.append(sigma)
+
+            # Ng auf darunterliegendes Geschoss aus EG des Elements
+            if i==x+1:
+                Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*(n-x*n_abschnitt)*h_geschoss*gamma_g
+
+            else:
+                Ng_darüberliegend=Ng_darüberliegend+element.A*gamma*n_abschnitt*h_geschoss*gamma_g
+        
+            b.append(t)             # t in Liste übergeben
+    
     element.t=b         #Länge = Anzahl Abschnitte
 
 

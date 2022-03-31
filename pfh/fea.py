@@ -99,10 +99,21 @@ class feModel:
         
 
         if buildingProp.tragwerk=='Outrigger':
-            for j,i in enumerate(buildingProp.posOut):
-                self.freedom_case.add_nodal_spring(node=self.nodes[i], val=buildingProp.K[j], dof=5)
-                #self.freedom_case.add_nodal_support(node=self.nodes[i], val=0, dof=5, stiff=buildingProp.K[j])
-                
+            
+            if len(buildingProp.posOut) == 1:
+                self.freedom_case.add_nodal_spring(node=self.nodes[buildingProp.posOut[0]], val=buildingProp.K[0], dof=5)
+                self.outriggerNodes = [self.nodes[buildingProp.posOut[0]]]
+            
+            elif len(buildingProp.posOut) == 2:
+                # add springs
+                self.freedom_case.add_nodal_spring(node=self.nodes[buildingProp.posOut[0]], val= buildingProp.K[0][0] , dof=5) # rotational spring, not plotted  
+                self.freedom_case.add_nodal_spring(node=self.nodes[buildingProp.posOut[1]], val= buildingProp.K[1][1] , dof=5) # rotational spring, not plotted    
+
+                # add spring between outrigger locations
+
+                self.freedom_case.add_twonodal_spring(node1=self.nodes[buildingProp.posOut[0]], node2=self.nodes[buildingProp.posOut[1]], val = buildingProp.K[0][1], dof= 5)
+
+                self.outriggerNodes = [self.nodes[buildingProp.posOut[0]], self.nodes[buildingProp.posOut[1]]]
 
 
         # Anzahl Abschnitte mit unterschiedlichen Steifigkeiten
@@ -159,7 +170,7 @@ class feModel:
                 self.beams.append(beam)
 
     def calcBendingMoment(self):
-         # you can easily change the solver settings
+        # you can easily change the solver settings
         settings = SolverSettings()
         settings.linear_static.time_info = False
 
@@ -182,6 +193,27 @@ class feModel:
             bm.append(bm_i2)
                  
         return bm
+    
+    def calcRotations(self):
+        # you can easily change the solver settings
+        settings = SolverSettings()
+        settings.linear_static.time_info = False
+
+        # the linear static solver is an object and acts on the analysis object
+        solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
+        solver.solve()
+
+        Phi = []
+
+        # Nodal displacement, to check for validation
+        for node in self.nodes:
+            vec = node.get_displacements(self.analysis_case)
+            for nodeOut in self.outriggerNodes:
+                if node == nodeOut:
+                    Phi.append(vec[5])
+
+        return Phi
+
 
 
 
@@ -312,6 +344,9 @@ class feModel:
 
         # apply spring condition
         self.K_mod = solver.apply_spring(K=K, analysis_case=analysis_case)
+
+        # apply twonodal spring
+        self.K_mod = solver.apply_twonodalspring(K=self.K_mod, analysis_case=analysis_case)
 
         # apply the boundary conditions
         self.K_mod = solver.remove_constrained_dofs(K=K, analysis_case=analysis_case)

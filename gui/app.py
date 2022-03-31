@@ -1555,7 +1555,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
             xlabel = 'alpha_outrigger'
             #Bestimmung wann alpha nicht mehr eingehalten (Differenz zwischen t_soll und t_rand größer als delta_t)
-            Grenze = self.grenzeAlpha(buildingProp, materialProp)
+            #Grenze = self.grenzeAlpha(buildingProp, materialProp)
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             xlabel = 'beta_outrigger'
 
@@ -1771,7 +1771,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
             xlabel = 'alpha_outrigger'
             #Bestimmung wann alpha nicht mehr eingehalten (Differenz zwischen t_soll und t_rand größer als delta_t)
-            Grenze = self.grenzeAlpha(buildingProp, materialProp)
+            #Grenze = self.grenzeAlpha(buildingProp, materialProp)
         if buildingProp.parameter == 'Steifigkeitsverhältnis Beta (Outrigger)':
             xlabel = 'beta_outrigger'
         if buildingProp.parameter == 'Outriggeranordnung über die Höhe':
