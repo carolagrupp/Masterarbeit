@@ -178,17 +178,13 @@ class feModel:
         solver = LinearStatic(analysis=self.analysis, analysis_cases=[self.analysis_case], solver_settings=settings)
         solver.solve()
 
-        #beamBernoulli = frame2d.EulerBernoulli2D_2N(nodes = self.nodes, material = self.material , section = self.section)
-        #fea_int = fea.FiniteElement(nodes = self.nodes, material = self.material, efs = beamBernoulli.efs)
         
         bm = []
-        #for i in range (0, len(self.nodes)):
+    
         for el in solver.analysis.elements:
             bmd = el.get_bmd(2, self.analysis_case)
             bm_i1 = bmd[1][0]
             bm_i2 = bmd[1][1]
-            #bm_i = max(abs(bmd[1][1]), abs(bmd[1][0]))
-            #bm_i = bmd[1][1]
             bm.append(bm_i1)
             bm.append(bm_i2)
                  
@@ -377,18 +373,6 @@ class feModel:
         # print(f/f_k)
         # K_gen = 3 * E * I /(L^3) / 
 
-   
-def calcStress(element,buildingProp,loads,materialProp):   
-    N_max= element.Ng_darüberliegend+(element.A_einzug*(loads.gd+loads.qd*element.alpha)+element.l_Fassade*loads.gd_Fassade)*buildingProp.n_abschnitt*element.i+element.A*materialProp.gamma*buildingProp.n_abschnitt*buildingProp.h_geschoss*1.35
-    N_kombi= element.Ng_darüberliegend+(element.A_einzug*(loads.gd+loads.qd*element.alpha*loads.Psi_q)+element.l_Fassade*loads.gd_Fassade)*buildingProp.n_abschnitt*element.i+element.A*materialProp.gamma*buildingProp.n_abschnitt*buildingProp.h_geschoss*1.35
-    
-    sigma_Nmax=1.5*loads.Psi_w*loads.M[element.i-1]/element.W+N_max/element.A      #Abdeckung beider Kombinationen aus den veränderlichen Lasten durch Wind und Verkehr
-    sigma_Mmax=1.5*loads.M[element.i-1]/element.W+N_kombi/element.A
-
-    sigma=max(sigma_Nmax,sigma_Mmax)
-
-
-    return sigma
 
 
 # ------------------------------------------------------------------------------

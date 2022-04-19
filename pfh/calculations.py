@@ -122,13 +122,13 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
     #Äußere Schleife: Wiederholen für alle Abschnitte
     for i in range(1,z):
 
-        if i==x+1:      # nur wenn z=x+2
-            s=n        # s für Stelle an der berechnet wird
+        if i==x+1:                              # nur wenn z=x+2
+            s=n                                 # s für Stelle an der berechnet wird
         
-        else: # s Geschosse über aktuellem Abschnitt
+        else:                                   # s Geschosse über aktuellem Abschnitt
             s=n_abschnitt*i
         
-        sigma=2*f   # Anfangswert, damit sigma für Schleife größer als f ist
+        sigma=2*f                               # Anfangswert, damit sigma für Schleife größer als f ist
 
         if loads.alpha_n=="Nein":
             alpha_n=1
@@ -136,7 +136,7 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
         else:
             alpha_n=0.7+0.6/(n_abschnitt*i)
         
-        alpha=min(alpha_a,alpha_n)      # Nach Norm darf nur einer der beiden Werte angewendet werden
+        alpha=min(alpha_a,alpha_n)              # Nach Norm darf nur einer der beiden Werte angewendet werden
         
         buildingProp.i_aktuell = i
         buildingProp.ErsteBerechnungSigma = True
@@ -219,7 +219,7 @@ def calcElementWidth(element,buildingProp,loads,materialProp,str_):
                     else:
                         t=t+a   #Erhöhen um delta_t
                     buildingProp.ErsteBerechnungSigma = False
-            # Belastung der Elements speichern
+            # Belastung des Elements speichern
             if buildingProp.tragwerk == 'Outrigger':
                 if element.typ == 'Kern':
                     buildingProp.sigma_kern.append(sigma)
@@ -351,11 +351,6 @@ def calcDynamicElementWidth(buildingProp, loads, materialProp, DataProp, str_, e
 
     print(buildingProp.dyn_w_tip_D)
 
-
-
-
-
-
 def calcShearDeformation(buildingProp,loads):
     'Schubverfromung berechnen'
     # Berechnung der Verformung erfolgt nicht wie sonst von oben nach unten sondern von unten nach oben
@@ -398,7 +393,7 @@ def calcShearDeformation(buildingProp,loads):
 def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=None,element3=None,element4=None):
     'Nachweis der Verformung'
     #in str_.design
-    w = 2*loads.w_max       #loads.w_max=h_total/Eingabe w_max, in m, 2x, damit der Startwert für die while Schleife größer als w_max ist
+    w = 2*loads.w_max               #loads.w_max=h_total/Eingabe w_max, in m, 2x, damit der Startwert für die while Schleife größer als w_max ist
     delta_t=materialProp.delta_t    #Schrittweite Querschnittserhöhung
     buildingProp.mue=[]
 
@@ -412,22 +407,21 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
         feModel = fea.feModel(buildingProp,loads,materialProp)
         w_EI = fea.feModel.calcStaticWindloadDeflection(feModel)    #Angabe Liste jedes Geschoss
         
-        if buildingProp.Nachweis_GZT == False:
-            # Auslesen Biegemomente über die Höhe
-            moment = fea.feModel.calcBendingMoment(feModel)
-            
-            buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
-            
-            buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
-            for i in range(0,buildingProp.n):
-                bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
-                buildingProp.moment.append(bm_max)
+        # Auslesen Biegemomente über die Höhe
+        moment = fea.feModel.calcBendingMoment(feModel)
+        
+        buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
+        
+        buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
+        for i in range(0,buildingProp.n):
+            bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
+            buildingProp.moment.append(bm_max)
 
         w_GA = calcShearDeformation(buildingProp, loads)
                
         w = w_EI[0] + w_GA[0]
         
-        if element2 == None and w > loads.w_max:        #zB core hat nur ein element, bei dem der QS vergrößert werden kann
+        if element2 == None and w > loads.w_max:                                                # zB core hat nur ein element, bei dem der QS vergrößert werden kann
             element1.t= [element+delta_t for element in element1.t]
 
         if element2 != None and w > loads.w_max and w_EI[0] > loads.w_verhältnis*w_GA[0]:      # Biegeverformung größer als erwünscht
@@ -445,7 +439,7 @@ def buildingDeflection(buildingProp,loads,materialProp,str_,element1,element2=No
 def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,element3=None,element4=None):
     'Nachweis interstory Drift'
     
-    Teta_i=2*loads.maxTeta_i    #2x, damit Startwert für Teta_i> als maxTeta ist für Schleife
+    Teta_i=2*loads.maxTeta_i    # 2x, damit Startwert für Teta_i> als maxTeta ist für Schleife
     delta_t=materialProp.delta_t
     buildingProp.mue=[]
 
@@ -457,24 +451,20 @@ def interstoryDrift(buildingProp,loads,materialProp,str_,element1,element2=None,
         
         # Knotenverformungen und Verformungsdifferenz berechnen
         feModel=fea.feModel(buildingProp,loads,materialProp)                    # Modell zu Ermitllung der Biegeverformung jedes Knotens
-        if buildingProp.Nachweis_GZT == False:
-            # Auslesen Biegemomente über die Höhe
-            moment = fea.feModel.calcBendingMoment(feModel)
-            
-            buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
-            
-            buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
-            for i in range(0,buildingProp.n):
-                bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
-                buildingProp.moment.append(bm_max)
+        
+        # Auslesen Biegemomente über die Höhe
+        moment = fea.feModel.calcBendingMoment(feModel)
+        
+        buildingProp.moment_ges = moment                                                # kNm                 Array mit 2 Momenten je Element bzw Geschoss
+        
+        buildingProp.moment = [0]                                                                           # Array mit maximalem Moment je Geschoss
+        for i in range(0,buildingProp.n):
+            bm_max = max(abs(moment[2*i]), abs(moment[2*i+1]))
+            buildingProp.moment.append(bm_max)
 
-        buildingProp.w_GA=calcShearDeformation(buildingProp, loads)             # Funktion zur Ermittlung des Schubverformung jedes Knotens
+        buildingProp.w_GA=calcShearDeformation(buildingProp, loads)                         # Funktion zur Ermittlung des Schubverformung jedes Knotens
         Teta_i, w_EI_max = fea.feModel.calcInterstoryDrift(feModel,buildingProp)          # Funktion zur Ermitllung der Verfromungsdifferenz der Knoten aus Schub und Biegung
         
-        #if Teta_i > loads.maxTeta_i:
-         #   element1.t = [element+2.5 if element == 27.5 else element+5 for element in element1.t]
-          #  if element2 != None:
-           #     element2.t= [element+2.5 if element == 27.5 else element+5 for element in element2.t]
 
         if element2 == None and Teta_i > loads.maxTeta_i:
             element1.t= [element+delta_t for element in element1.t]

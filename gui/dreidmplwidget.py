@@ -35,6 +35,9 @@ import pyLEK.plotters.plotBarChart as plotBarChart
 import pyLEK.plotters.plotPieChart as plotPieChart
 import pyLEK.plotters.plotSurface as plotSurface
 
+import pyLEK.plotters.plotHelpers as plotHelpers
+import pyLEK.plotters.plotStyle.mplStyle as mplStyle
+
 # ------------------------------------------------------------------------------
 # Functions / Classes
 # ------------------------------------------------------------------------------
@@ -186,6 +189,32 @@ class DreiDMplWidget(QtWidgets.QWidget):
 
         # Update the canvas
         self.canvas.draw()
+
+
+
+        figSize = plotHelpers.calcFigSize(aspectRatio=1, pageWidth=5)
+        #figSize = plotHelpers.calcFigSize(aspectRatio=2, pageWidth=20)
+
+        style_dict = {"lines.linewidth": 2, "figure.figsize": figSize}
+
+        # Find plot styles
+        mplPath = mplStyle.findPlotStyle(mpl)
+
+        # Modify plot styles
+        mplStyle.modifyPlotStyle(style_dict, mplPath)
+
+        # Get the plot styles
+        mplStyle.retrievePlotStyle(style_dict, mplPath)
+
+        # Check font
+        plotHelpers.fontChecker()
+
+        # Save plot as pdf_tex
+        if saveTex == True:
+            try:
+                plotHelpers.savePdf_tex(self.fig, dir_fileName)
+            except TypeError:
+                print("Error saving .pdf_tex: To save pdf_tex specify a file name")
 
         # For your own plot:
         # if savePlt == True:

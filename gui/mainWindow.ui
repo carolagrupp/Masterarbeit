@@ -2729,7 +2729,7 @@
                  <set>Qt::AlignCenter</set>
                 </property>
                 <property name="minimum">
-                 <double>1.000000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                 <property name="maximum">
                  <double>1000.000000000000000</double>
@@ -3967,8 +3967,8 @@
                <widget class="MplWidget" name="MplWidget_220" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                 <property name="toolTip">
@@ -4057,8 +4057,8 @@
                <widget class="MplWidget" name="MplWidget_230" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4140,8 +4140,8 @@
                <widget class="MplWidget" name="MplWidget_240" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4223,8 +4223,8 @@
                <widget class="MplWidget" name="MplWidget_250" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4345,8 +4345,8 @@
                <widget class="MplWidget" name="MplWidget_261" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4424,8 +4424,8 @@
                <widget class="MplWidget" name="MplWidget_271" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4543,8 +4543,8 @@
                <widget class="MplWidget" name="MplWidget_310" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4636,8 +4636,8 @@
                <widget class="MplWidget" name="MplWidget_320" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4729,8 +4729,8 @@
                <widget class="MplWidget" name="MplWidget_330" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4822,8 +4822,8 @@
                <widget class="MplWidget" name="MplWidget_340" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -4915,8 +4915,8 @@
                <widget class="MplWidget" name="MplWidget_350" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5008,8 +5008,8 @@
                <widget class="MplWidget" name="MplWidget_360" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5105,8 +5105,8 @@
                <widget class="MplWidget" name="MplWidget_410" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5174,11 +5174,6 @@
                     <string>Verformung</string>
                    </property>
                   </item>
-                  <item>
-                   <property name="text">
-                    <string>Steifigkeitsverhältnis Alpha (Outrigger)</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                </layout>
@@ -5198,8 +5193,8 @@
                <widget class="MplWidget" name="MplWidget_412" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5271,8 +5266,8 @@
                <widget class="MplWidget" name="MplWidget_512" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5330,16 +5325,6 @@
                     <string>alpha_ist Outrigger 2</string>
                    </property>
                   </item>
-                  <item>
-                   <property name="text">
-                    <string>alpha_ist Outrigger 3</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>alpha_ist Outrigger 4</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                </layout>
@@ -5359,8 +5344,8 @@
                <widget class="MplWidget" name="MplWidget_420" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5442,8 +5427,8 @@
                <widget class="MplWidget" name="MplWidget_430" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5535,8 +5520,8 @@
                <widget class="MplWidget" name="MplWidget_440" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5628,8 +5613,8 @@
                <widget class="MplWidget" name="MplWidget_450" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5739,8 +5724,8 @@
                <widget class="DreiDMplWidget" name="Widget_470" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>400</width>
-                  <height>400</height>
+                  <width>40</width>
+                  <height>40</height>
                  </size>
                 </property>
                </widget>
@@ -5793,11 +5778,6 @@
                     <string>Masse</string>
                    </property>
                   </item>
-                  <item>
-                   <property name="text">
-                    <string>Omega</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                </layout>
@@ -5824,11 +5804,6 @@
                     <string>Oberfläche</string>
                    </property>
                   </item>
-                  <item>
-                   <property name="text">
-                    <string>Scatter</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                </layout>
@@ -5851,7 +5826,7 @@
      <x>0</x>
      <y>0</y>
      <width>1091</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSpeichern">

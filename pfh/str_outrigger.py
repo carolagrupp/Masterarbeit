@@ -125,75 +125,40 @@ def arrangementOutrigger(buildingProp):
 
     
     
-    if buildingProp.varPosOut == True:       #Bei Optimierung über Höhe
+    if buildingProp.varPosOut == True and buildingProp.xi_True == True:       #Bei Optimierung über Höhe
         buildingProp.posOut = [n-int(buildingProp.xi*n)]
+        
 
-    elif buildingProp.varPosOut_2D == True:       #Bei 2D Optimierung über Höhe
+    elif buildingProp.varPosOut_2D == True:                                     #Bei 2D Optimierung über Höhe
         if buildingProp.xi_1 > buildingProp.xi_2:
             buildingProp.posOut = [n-int(buildingProp.xi_1*n), n-int(buildingProp.xi_2*n)]
         if buildingProp.xi_2 > buildingProp.xi_1:
             buildingProp.posOut = [n-int(buildingProp.xi_2*n), n-int(buildingProp.xi_1*n)]
-        #Was wenn sie gleich sind?
     else:
         # Bestimmen der Outrigger Geometrie (nach Park, Lee et all 2016)
         if n_outrigger == 0:
             buildingProp.posOut = []
 
         elif n_outrigger == 1:
-            buildingProp.posOut = [n-int(0.61*n)]#[0] # ganz oben für Untersuchung[n-int(0.61*n)]
+            buildingProp.posOut = [n-int(0.61*n)]
 
         elif n_outrigger == 2:
             buildingProp.posOut = [n-int(0.73*n), n-int(0.41*n) ]
 
-        elif n_outrigger == 3:
-            buildingProp.posOut = [n-int(0.80*n), n-int(0.55*n), n-int(0.33*n) ]
+        #elif n_outrigger == 3:
+            #buildingProp.posOut = [n-int(0.80*n), n-int(0.55*n), n-int(0.33*n) ]
 
-        elif n_outrigger == 4:
-            buildingProp.posOut = [n-int(0.84*n), n-int(0.64*n), n-int(0.47*n), n-int(0.29*n) ]
+        #elif n_outrigger == 4:
+            #buildingProp.posOut = [n-int(0.84*n), n-int(0.64*n), n-int(0.47*n), n-int(0.29*n) ]
         
         else: 
-            print(str('Die gewählte Outrigger Anzahl ist nicht verfügbar. Bitte Zahlen zwischen 0 und 4 angeben!'))
+            print(str('Die gewählte Outrigger Anzahl ist nicht verfügbar. Bitte Zahlen zwischen 0 und 2 angeben!'))
             quit()
 
     # Umwandlung in Abschnitte
     buildingProp.posOut_abschnitt = []
     for posOut in buildingProp.posOut:
         buildingProp.posOut_abschnitt.append(posOut//buildingProp.n_abschnitt)              # Liste mit Liste der Abschnitte in denen Outrigger sind
-
-def changeColumn(buildingProp, materialProp, randStütze, eckStütze):
-    # Nicht in Verwendung
-    """Berechnet die Dimension der Stützen über das Steifigkeitsverhältnis zum Kern, 
-        dabei wird zwischen Eck- und Randstütze unterschieden
-        """
-    I = buildingProp.I
-    E = materialProp.E
-
-    alpha_outrigger = buildingProp.alpha_outrigger
-    b_total = buildingProp.b_total
-    a = materialProp.delta_t
-    #A_stütze_erf_ges = []
-    #A_vorh_ges = []
-
-    for abschnittOut in buildingProp.posOut_abschnitt:
-        A_stütze_erf = 2*E/E*I[abschnittOut]/(alpha_outrigger*b_total**2)                # m**2
-        A_stütze_erf_ges = 5*A_stütze_erf
-        A_eck_vorh = (eckStütze.t[abschnittOut]/100)**2
-        A_rand_vorh = (randStütze.t[abschnittOut]/100)**2
-        A_stütze_vorh_ges = 2*A_eck_vorh + 3*A_rand_vorh
-
-        eta = A_stütze_erf_ges/A_stütze_vorh_ges
-
-        A_eck_neu = eta*A_eck_vorh
-        t_eck_neu = numpy.sqrt(A_eck_neu)*100
-        A_rand_neu = eta*A_rand_vorh
-        t_rand_neu = numpy.sqrt(A_rand_neu)*100
-        buildingProp.t_stütze.append(t_rand_neu)        #auch noch für Eck bzw gesamt
-        while t_rand_neu > randStütze.t[abschnittOut]:                                           # Vergrößern von t wenn nötig
-            randStütze.t[abschnittOut] += a                                                    # Ersetzen von t für ganzen Abschnitt
-        while t_eck_neu > eckStütze.t[abschnittOut]:                                            # Vergrößern von t wenn nötig
-            eckStütze.t[abschnittOut] += a                                                     # Ersetzen von t für ganzen Abschnitt
-
-        A_neu_vorh = 2*(eckStütze.t[abschnittOut]/100)**2 + 3*(randStütze.t[abschnittOut]/100)**2
 
 def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, eckStütze):
     """Berechnet die Dimension des Outriggers über das Steifigkeitsverhältnis zum Kern 
@@ -217,7 +182,7 @@ def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, ec
     for posOut in buildingProp.posOut:
         I_outEff_soll_i = E/E*I[posOut//buildingProp.n_abschnitt]*b_total/(beta_outrigger*h)          # m**4
         I_outrigger_soll_i = I_outEff_soll_i/(1+b_raster/b_raster)**3
-        b_erf=I_outrigger_soll_i*12/(h_geschoss)**3*100                                  # cm
+        b_erf=I_outrigger_soll_i*12/(h_geschoss)**3*100                                                 # cm
         b_vorh = outrigger.t[posOut]
         while b_vorh < b_erf:
             b_vorh += a
@@ -228,8 +193,8 @@ def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, ec
 
     # Erhöhen der Stützenquerschnitte, wenn kleiner als erforderliches Steifigkeitsverhältnisses
     for abschnittOut in buildingProp.posOut_abschnitt:
-        A_stütze = 2*E/E*I[abschnittOut]/(alpha_outrigger*b_total**2)                # m**2
-        t_stütze = numpy.sqrt(A_stütze)*100                                         # cm
+        A_stütze = 2*E/E*I[abschnittOut]/(alpha_outrigger*b_total**2)                           # m**2
+        t_stütze = numpy.sqrt(A_stütze)*100                                                     # cm
         buildingProp.t_stütze.append(t_stütze)
 
         while t_stütze > randStütze.t[abschnittOut]:                                           # Vergrößern von t wenn nötig
@@ -243,8 +208,6 @@ def ratiosOutrigger(buildingProp, materialProp, kern, outrigger, randStütze, ec
                 randStütze.t[abschnitte] += a                                                    # Ersetzen von t für ganzen Abschnitt
             while eckStütze.t[abschnittOut] > eckStütze.t[abschnitte]:                                            # Vergrößern von t wenn nötig
                 eckStütze.t[abschnitte] += a                                                     # Ersetzen von t für ganzen Abschnitt
-    #Alternative Unterscheidung Eck- und Randstütze
-    #changeColumn(buildingProp, materialProp, randStütze, eckStütze)
 
 
 def outriggerStiffness(I_outrigger, buildingProp):
@@ -276,10 +239,6 @@ def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, m
     buildingProp.H_outrigger = []
 
     # Summen von A und I jeweils von einer Hälfte (2 Outrigger, 2 Eckstützen, 3 Randstützen)
-    A_randStütze = []                                                                                   # m**2
-    A_eckStütze = []
-    t_randStützeOutrigger = []                                                                          # cm
-    t_eckStützeOutrigger = []
     I_outrigger = []                                                                               # m**4
     A_stützen = []
     K_stütze = []
@@ -317,14 +276,9 @@ def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, m
         K_stütze.append(1/K_stütze_inv)
         j += 1
 
-
-    # Alles folgende könnte in eine Schleife
-
     # Aktualisierung Querschnittswerte
     for posOut in buildingProp.posOut:
         abschnittOut = posOut//buildingProp.n_abschnitt
-        #t_randStützeOutrigger.append(randStütze.t[abschnittOut])
-        #t_eckStützeOutrigger.append(eckStütze.t[abschnittOut])
         t_outrigger = outrigger.t[posOut]
         calcProfileProp(outrigger, buildingProp, materialProp, t_outrigger)
         I_outrigger.append(outrigger.I)
@@ -334,32 +288,21 @@ def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, m
         I_outEff_i = outriggerStiffness(I_outrigger[i], buildingProp)
         I_outEff.append(I_outEff_i)
         buildingProp.I_effOutrigger = I_outEff
-        #calcProfileProp(randStütze, buildingProp, materialProp, t_randStützeOutrigger[i])
-        #A_randStütze.append(randStütze.A_min)
-        #calcProfileProp(eckStütze, buildingProp, materialProp, t_eckStützeOutrigger[i])
-        #A_eckStütze.append(eckStütze.A_min)
     
     # Berechnung der Federsteifigkeiten
-
     if len(buildingProp.posOut) == 1:
         for i in range(0, len(buildingProp.posOut)):
             I_outriggerGesamt = 2*I_outEff[i]                                                         # 4 Outrigger in Windrichtung
-            #A_stützen = 3*A_randStütze[i] + 2*A_eckStütze[i]
-            #K_i = 12*materialProp.E*I_outriggerGesamt*A_stützen*b_total**2/(A_stützen*b_total**3+24*buildingProp.H_outrigger[i]*I_outriggerGesamt)
             K_i = 12*E*I_outriggerGesamt*K_stütze[i]*b_total**2/(K_stütze[i]*b_total**3+24*E*I_outriggerGesamt)
             K.append(K_i)
     elif len(buildingProp.posOut) == 2:
         K_st_unten = K_stütze[1]                                #bis unterer Outrigger
         K_st_oben_inv = 1/K_stütze[0] - 1/K_stütze[1]         #zwischen oberem und unterem Outrigger
         K_st_oben = 1/K_st_oben_inv
-        #H_out_oben = buildingProp.H_outrigger[0]
-        #H_out_unten = buildingProp.H_outrigger[1]
-        #H_out_delta = H_out_oben-H_out_unten
         I_out_oben = 2*I_outEff[0]
         I_out_unten = 2*I_outEff[1]
 
         # Federn Kern
-        
         K_I = []        # für Kern Liste je Outrigger Federsteifigkeit bis Fußpunkt
     
         for j, abschnittOut in enumerate(buildingProp.posOut_abschnitt):
@@ -496,84 +439,6 @@ def checkNW(buildingProp, materialProp, kern, eckStütze, randStütze):
 
     return Test
 
-def checkChange(buildingProp, materialProp, t_check_kern, t_check_eckstütze, t_check_randstütze, t_check_outrigger, t_check_belt, kern, eckStütze, randStütze, outrigger, belt):
-    """Überprüft ob sich Dimensionen der Bauteile seit der letzten Iteration verändert haben
-        Wenn nicht, Abbruch der Schleife
-        """
-    length = len(kern.t)
-    Check_kern = [False]*length
-    Check_eckstütze = [False]*length
-    Check_randstütze = [False]*length
-    Check_outrigger = []
-    Check_belt = []
-    fehler = 0.9*materialProp.delta_t                                                              # cm, ist das sinnvoll?
-
-    # Vergleich t_alt zu t_neu
-    for i in range(0, len(kern.t)):
-        delta_kern = kern.t[i] - t_check_kern[i]
-        if abs(delta_kern) < fehler:
-            Check_kern[i] = True
-        delta_eckstütze = eckStütze.t[i] - t_check_eckstütze[i]
-        if abs(delta_eckstütze) < fehler:
-            Check_eckstütze[i] = True
-        delta_randstütze = randStütze.t[i] - t_check_randstütze[i]
-        if abs(delta_randstütze) < fehler:
-            Check_randstütze[i] = True
-
-    for posOut in buildingProp.posOut:
-        delta_outrigger = outrigger.t[posOut] - t_check_outrigger[posOut]
-        if abs(delta_outrigger) < fehler:
-            Check_outrigger.append(True)
-        else:
-            Check_outrigger.append(False)
-
-        delta_belt = belt.t[posOut] - t_check_belt[posOut]
-        if abs(delta_belt) < fehler:
-            Check_belt.append(True)
-        else:
-            Check_belt.append(False)
-
-
-
-    Test = True
-    for i in range(0, length):
-        if Check_kern[i] == False:
-            Test = False
-        if Check_eckstütze[i] == False:
-            Test = False
-        if Check_randstütze[i] == False:
-            Test = False
-    for i in range(0, len(Check_outrigger)):
-        if Check_outrigger[i] == False:
-            Test = False
-        if Check_belt[i] == False:
-            Test = False
-
-    
-    return Test
-
-def checkChangeGebäudenachweis(materialProp, t_check_kern, kern):
-    """Überprüft ob sich Dimensionen des Kerns seit der letzten Iteration verändert haben
-        Wenn nicht, Abbruch der Schleife
-        """
-    length = len(kern.t)
-    Check_kern = [False]*length
-    fehler = 0.9*materialProp.delta_t                                                          # in cm, ist das sinnvoll?
-    
-    # Vergleich t_alt zu t_neu
-    for i in range(0, len(kern.t)):
-        delta_kern = kern.t[i] - t_check_kern[i]
-        if delta_kern < fehler:
-            Check_kern[i] = True
-    
-    Test = True
-    for i in range(0, length):
-        if Check_kern[i] == False:
-            Test = False
-    
-    return Test
-
-
 def buildingStiffness(buildingProp,materialProp,kern,element2,element3,element4):                                           # wird in calculations.buildingDeflection und interstoryDrift aufgerufen
     """Berechnet die Steifigkeit des Kerns (bei Outrigger) je Abschnitt
         """
@@ -593,45 +458,7 @@ def bendingStiffnessModification(buildingProp, materialProp, kern, randStütze, 
     """Erhöht die Querschnittsdimension der Tragwerkselemente die an der Aussteifung beteiligt sind, da diese maßgebend für die Biegeverformung ist
         """
     # Erhöhung mit Berücksichtigung der vorgegebenen Steifigkeitsverhältnisse
-    beta_outrigger = buildingProp.beta_outrigger
-    alpha_outrigger = buildingProp.alpha_outrigger#*10**(-3)
-    b_total = buildingProp.b_total
-    h = buildingProp.h_total
-    h_geschoss = buildingProp.h_geschoss
-    minderung_I=materialProp.minderung_I
-    buildingProp.t_stütze = []
-    b_kern = 2*buildingProp.b_raster
 
-    # Zunächst erhöhen des Outriggers (dann aber große Erhöhung direkt, zu großer Schritt)
-    #for stelle in buildingProp.posOut:
-        #outrigger.t[stelle] += delta_t
-        #calcProfileProp(outrigger, buildingProp, materialProp, outrigger.t[stelle])
-        #stelle_abschnitt = stelle//buildingProp.n_abschnitt
-        # Anpassen Kern
-        #I_kern_i = materialProp.E/materialProp.E*beta_outrigger*4*outrigger.I*h/b_total
-        #I_stern = I_kern_i/minderung_I*12*100**4/(8*b_kern)
-        #t_soll = 0.30285*(1.2599*((12*b_kern**6+81*I_stern**2)**(1/2)+9*I_stern)**(2/3)-2.8845*b_kern**2)\
-                                #/((12*b_kern**6+81*I_stern**2)**(1/2)+9*I_stern)**(1/3)
-        #while kern.t[stelle_abschnitt] < t_soll:
-            #kern.t[stelle_abschnitt] += delta_t
-        #buildingStiffness(buildingProp, materialProp, kern,element2=None, element3=None, element4=None)
-        # Anpassen Stützen
-        #A_stütze = 2*materialProp.E/materialProp.E*buildingProp.I[stelle_abschnitt]/(alpha_outrigger*b_total**2*10)
-        #t_stütze = numpy.sqrt(A_stütze)*100                                         # cm
-        #buildingProp.t_stütze.append(t_stütze)
-        
-        #while t_stütze > randStütze.t[stelle_abschnitt]:                                           # Vergrößern von t wenn nötig
-            #randStütze.t[stelle_abschnitt] += delta_t                                                    # Ersetzen von t für ganzen Abschnitt
-        #while t_stütze > eckStütze.t[stelle_abschnitt]:                                            # Vergrößern von t wenn nötig
-            #eckStütze.t[stelle_abschnitt] += delta_t
-
-    # Aktualisierung K_Feder für fea
-    #buildingProp.K = outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, materialProp)
-    # Müssen Stützen etc in Geschossen darunter wieder neu bemessen werden
-    # deswegen GzG mit in Iterationsschleife von GzT?
-
-    #-------------------------------------------------------------------------------------------------------
-    ## oder
     # Anpassen des Kerns
     kern.t = [element + delta_t for element in kern.t]
 
@@ -732,10 +559,6 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         innenStütze.t = [t]*z
         belt.t = [0] * buildingProp.n
 
-
-
-    
-
     # Erstellung Liste Outriggerdimension über n = Anzahl Geschosse
     outrigger.t = [0] * buildingProp.n
 
@@ -820,14 +643,9 @@ def design(buildingProp,loads,materialProp,DataProp):                           
             # Tragfähigkeitsnachweise Aussteifung:
             #---------------------------------------------------------------------------------------------------
 
-            # Nachweis Outrigger
-
-            # Weglassen, da Beanspruchung nicht einfach betrachtbar
-            # Wird als nachgewiesen angenommen
-            
+            # Nachweis Outrigger: Vernachlässigt, da Beanspruchung nicht einfach betrachtbar
             
             # Nachweis Belt Truss
-
             # System: Durchlaufträger von Eck- zu Eckstütze, beansprucht durch Moment aus Auflagerkräften Stützen und Outrigger
 
             belt.t = [0] * buildingProp.n
@@ -869,7 +687,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
             buildingProp.t_belt_now = belt.t
             buildingProp.t_outrigger_now = outrigger.t
 
-            # neu: Nachweis der Stützen und des Kerns erfolgt nur als Überprüfung ob eingehalten, wenn nicht noch eine Schleife hier
+            # Nachweis der Stützen und des Kerns erfolgt nur als Überprüfung ob eingehalten, wenn nicht noch eine Schleife hier
             # Check ist dann ob alle drei Nachweise true sind und erhöhen der Abschnitte die False sind
             # Nachweis Stützen
             # Beanspruchung: Auflagerkraft Feder + Vertikallasten inkl aus Federn darüber
@@ -879,35 +697,9 @@ def design(buildingProp,loads,materialProp,DataProp):                           
             # Nachweis Kern 
             # Beanspruchung: Momente aus fea + Vertikallasten
             calculations.calcElementWidth(kern, buildingProp,loads,materialProp,str_)
-        # neu
+            
+        # Überprüfen ob Nachweise für alle Elemente eingehalten sind, sonst QS-Erhöhung
         Test = checkNW(buildingProp, materialProp, kern, eckStütze, randStütze)
-
-
-        # # Kontrolle Querschnittsänderung für Iterationsabbruch
-        # if buildingProp.Iteration_counter == 1:
-        #     Test = False
-        #     #Test = True #Für Vergleich ohne Iteration
-        # elif buildingProp.Nachweis_GZT == False:
-        #     Test = True
-
-        # else:
-        #     Test = checkChange(buildingProp, materialProp, t_check_kern, t_check_eckstütze, t_check_randstütze, t_check_outrigger, t_check_belt, kern, eckStütze, randStütze, outrigger, belt)    
-
-        # # Speicherung t-Werte für Check in nächster Iteration
-        # t_check_kern = []
-        # t_check_eckstütze = []
-        # t_check_randstütze = []
-        # for i in range(len(eckStütze.t)):
-        #     t_check_eckstütze.append(eckStütze.t[i])
-        #     t_check_randstütze.append(randStütze.t[i])
-        #     t_check_kern.append(kern.t[i])
-
-        # t_check_outrigger = [0] * buildingProp.n
-        # t_check_belt = [0] * buildingProp.n
-        # for posOut in buildingProp.posOut:
-        #     t_check_outrigger[posOut] = outrigger.t[posOut]
-        #     t_check_belt[posOut] = belt.t[posOut]
-
 
         if Test == True:
             Tragfähigkeitsnachweis_erbracht = True
@@ -915,49 +707,14 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         
     print('Iterationsanzahl = ', buildingProp.Iteration_counter)
 
-
-    # Erhöhen des Kerns wenn Alpha zu stark abweicht, so dass Alpha wieder eingehalten wird
-    # oder doch anderer Ablauf insgesamt
-    # erforderliches Flächenträgheitsmoment Kern 
-    # buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
-    # alpha_outrigger = buildingProp.alpha_outrigger
-    # for abschnittOut in buildingProp.posOut_abschnitt:
-    #     A_randstütze = (randStütze.t[abschnittOut]/100)**2
-    #     A_eckstütze = (eckStütze.t[abschnittOut]/100)**2
-    #     alpha_ist_rand = 2*materialProp.E*buildingProp.I[abschnittOut]/(materialProp.E*A_randstütze*buildingProp.b_total**2)
-    #     alpha_ist_eck = 2*materialProp.E*buildingProp.I[abschnittOut]/(materialProp.E*A_eckstütze*buildingProp.b_total**2)
-    #     if alpha_outrigger-1 >alpha_ist_eck or alpha_outrigger-1 >alpha_ist_rand:
-    #         I_erf_rand = buildingProp.alpha_outrigger*materialProp.E*A_randstütze*buildingProp.b_total**2/(2*materialProp.E)
-    #         I_erf_eck = buildingProp.alpha_outrigger*materialProp.E*A_eckstütze*buildingProp.b_total**2/(2*materialProp.E)
-    #         I_erf = max(I_erf_eck, I_erf_rand)
-    #         while buildingProp.I[abschnittOut]<I_erf:
-    #             kern.t[abschnittOut] += materialProp.delta_t
-    #             buildingStiffness(buildingProp,materialProp,kern,element2=None,element3=None,element4=None)
-    #         for abschnitt in range(abschnittOut+1,len(kern.t)):
-    #             if kern.t[abschnitt]<kern.t[abschnittOut]:
-    #                 kern.t[abschnitt] = kern.t[abschnittOut]
     
     # Gebäudenachweise:
     t0=kern.t[-1]                                                                   #Kerndicke ganz unten
 
-    #Tragfähigkeitsnachweis = False
-    #Iteration_counter = 0
-
-    #while Tragfähigkeitsnachweis == False:
-        #Iteration_counter += 1
     calculations.buildingDeflection(buildingProp,loads,materialProp,str_,kern, randStütze, eckStütze, outrigger)
     calculations.interstoryDrift(buildingProp,loads,materialProp,str_,kern, randStütze, eckStütze, outrigger)
     buildingProp.t_kern=kern.t
 
-        #if Iteration_counter == 1:
-            #Test = False
-        #else:
-            #Test = checkChangeGebäudenachweis(materialProp, t_check_kern, kern)    
-
-        #t_check_kern = kern.t                                                       #Speicherung t-Werte für Check in nächster Iteration
-
-        #if Test == True:
-            #Tragfähigkeitsnachweis = True
 
     # Vergleich Tragfähigkeit und Gebäudenachweise:
     if kern.t[-1] > t0:     
@@ -1024,6 +781,9 @@ def design(buildingProp,loads,materialProp,DataProp):                           
         buildingProp.G_außenStützen.append(G_außenStützen)
         buildingProp.G_total.append(G_außenStützen+innenStütze.G[i]+kern.G[i]+buildingProp.G_outrigger[i]+buildingProp.G_belt[i])
         buildingProp.G_totalOhnePFH.append(randStützeOhnePFH.G[i]*12+eckStützeOhnePFH.G[i]*4+innenStütze.G[i]+kernOhnePFH.G[i])
+
+    print('G_total:', buildingProp.G_total[-1])
+    print('G_total ohne PFH:', buildingProp.G_totalOhnePFH[-1])
     
     # Eigenfrequenz
     calculations.calcEigenfrequency(buildingProp,loads,materialProp)
@@ -1066,16 +826,6 @@ def design(buildingProp,loads,materialProp,DataProp):                           
 
     # Überprüfen ob Stütze größer als erf für alpha ist (keine Erhöhung)
     if buildingProp.Nachweis_GZT == True:
-
-        buildingProp.alpha_outriggerFulfilled = True
-
-        for n,abschnittOut in enumerate(buildingProp.posOut_abschnitt):
-            if randStütze.t[abschnittOut] - a > buildingProp.t_stütze[n]:
-                buildingProp.alpha_outriggerFulfilled = False
-            elif eckStütze.t[abschnittOut] - a > buildingProp.t_stütze[n]:
-                buildingProp.alpha_outriggerFulfilled = False
-
-        print('Steifigkeitsverhältnis alpha zwischen Kern und Stützen ist ', buildingProp.alpha_outriggerFulfilled)
 
         print('M_Feder', buildingProp.moment_spring)
         print('N_Feder', buildingProp.kraftStütze_outrigger)

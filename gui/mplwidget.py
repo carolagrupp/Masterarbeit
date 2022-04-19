@@ -35,6 +35,9 @@ import pyLEK.plotters.plotBarChart as plotBarChart
 import pyLEK.plotters.plotPieChart as plotPieChart
 import pyLEK.plotters.plotSurface as plotSurface
 
+import pyLEK.plotters.plotHelpers as plotHelpers
+
+
 # ------------------------------------------------------------------------------
 # Functions / Classes
 # ------------------------------------------------------------------------------
@@ -118,6 +121,11 @@ class MplWidget(QtWidgets.QWidget):
         #     plot2D.plot2D(x, y, *keyargs, dir_fileName='Your_file_name',
         #                   savePlt=savePlt, savePkl=savePkl, saveTex=saveTex, fig=None, ax=None)
 
+        figSize = plotHelpers.calcFigSize(aspectRatio=1, pageWidth=12)
+        #figSize = plotHelpers.calcFigSize(aspectRatio=2, pageWidth=20)
+
+        style_dict = {"lines.linewidth": 2, "figure.figsize": figSize}
+
         if (savePlt == True) or (savePkl == True) or (saveTex == True):
             plot2D.plot2D(
                 x, y, xlabel=xlabel, ylabel=ylabel, title=title, legend=legend,
@@ -169,6 +177,10 @@ class MplWidget(QtWidgets.QWidget):
 
         # In order to save the plot, recall the plot function but without passing fig, ax
         # Like this, the plot style will be according to the desired .mplstyle
+
+        figSize = plotHelpers.calcFigSize(aspectRatio=2, pageWidth=20)
+
+        style_dict = {"lines.linewidth": 2, "figure.figsize": figSize}#, "legend.loc": 'upper center'}
 
         # For your own plot:
         if (savePlt == True) or (savePkl == True) or (saveTex == True):
