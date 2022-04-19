@@ -11,6 +11,8 @@ Aufbau des Codes:
 3. Durch klicken eines Knopfes in der GUI ruft app.py die dem gewählten Tragwerk entsprechende str_....py auf
 4. In der str_....py werden die Tragwerksspezifischen Eigenschaften berechnet und die Elemente mithilfe der Nachweise und Tragwerksübergreifender       Berechnungen in calculations.py und fea.py bemessen und in den zuvor erstellten Objekten gespeichert
 
+In Wind Data ist die Vorbereitung zur Berücksichtigung von dynamischen Windlasten enthalten. Es können Windtunnelergebnisse ausgelesen und die Umwandlung der Daten findet statt. Noch ist es nicht möglich diese an dem System aufzubringen.
+
 
 ## examples
 Es gibt die Möglichkeit Kerntragwerke, Rahmentragwerke, Framed Tube, Bundeld Tube und Outrigger zu analysieren.
