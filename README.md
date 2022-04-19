@@ -1,35 +1,28 @@
 # premiumForHeight
-This simple project is an example repo for Python projects @ILEK. 
+Programmcode zur parametrischen Analyse des Materialbedarfs von Aussteifungssystemen bei Hochhäusern
 
-Use this README to briefly describe your code.
 
-@ce: Um das Skript zu starten kannst du einfach das __main__.py file ausführen
 
 # structure
 
+Aufbau des Codes:
+1. main.py startet die Applikaion indem app.py aufgerufen wird
+2. app.py startet die GUI und erstellt die Objekte aus building.py
+3. Durch klicken eines Knopfes in der GUI ruft app.py die dem gewählten Tragwerk entsprechende str_....py auf
+4. In der str_....py werden die Tragwerksspezifischen Eigenschaften berechnet und die Elemente mithilfe der Nachweise und Tragwerksübergreifender       Berechnungen in calculations.py und fea.py bemessen und in den zuvor erstellten Objekten gespeichert
+
+
 ## examples
-For all your examples on which to run the code
+Es gibt die Möglichkeit Kerntragwerke, Rahmentragwerke, Framed Tube, Bundeld Tube und Outrigger zu analysieren.
 
 ## gui
-For everything connected wit the GUI (= Grafik User Interface) if you have one.
-
-See https://www.learnpyqt.com/tutorials/first-steps-qt-creator/ or https://likegeeks.com/pyqt5-tutorial 
-
-@ce: Für das Design der UI habe ich pyqt5 verwendet. Ich würde dir empfehlen den PyQt5 designer zu verwenden, siehe 2. Tutorial. 
-
-Die in PyQt5 erstellten *.ui Dateien habe ich dann in die mainWindow.py konvertiert, siehe 1. Tutorial.
-
-## foo
-If you're writing an application named foo, the directory that contains all this stuff is named /foo.
-
-This top-level directory can be the top-level architecture of your application.
-
-Below you can further structure your code:
-
-    /bar
-    /baz
-
-This are all sublevel directories
+Über die GUI können Gebäudegeometrie, Lasten und Parameter vorgegeben und variiert werden. 
 
 ## .gitignore
+
+# feastruct
+Zur Berechnung des Systems als zweidimensionales finite Elemente System wurde das Skript feastruct hinterlegt und leicht erweitert. 
+Zu Informationen zu den Rechten siehe feastruct/Lizenz
+
+
 
