@@ -21,7 +21,7 @@ Es gibt die Möglichkeit Kerntragwerke, Rahmentragwerke, Framed Tube, Bundeld Tu
 Über die GUI können Gebäudegeometrie, Lasten und Parameter vorgegeben und variiert werden. 
 
 # feastruct
-Zur Berechnung des Systems als zweidimensionales finite Elemente System wurde das Skript feastruct hinterlegt und leicht erweitert. 
+Zur Berechnung des Systems als zweidimensionales finite Elemente System wurde das Skript feastruct hinterlegt und leicht erweitert. Die Berücksichtigung von Federsteifigkeiten war noch nicht möglich, weshalb der Code dafür ergänzt wurde.
 Zu Informationen zu den Rechten siehe feastruct/License
 
 
