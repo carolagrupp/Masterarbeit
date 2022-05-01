@@ -772,7 +772,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Change to current file location
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Schnittgrößenverlauf"
-        saveTex = True
+        saveTex = False
         savePlt = True
         
         self.gui.MplWidget_240.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
@@ -827,7 +827,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Verformungen"
-        saveTex = True
+        saveTex = False
         savePlt = True
         
         self.gui.MplWidget_250.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
@@ -1071,9 +1071,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         annotations_position='center'
 
         xlim=[-0.5,(len(y[0])-0.5)]
-
-        #ylim=[0,160]
-        #ylim=[0,650]
         
         l1='Aussteifung'
         if buildingProp.tragwerk == 'Kerntragwerk':
@@ -1092,15 +1089,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Bauteilmengenverteilung nach Höhe"
-        saveTex = True
+        saveTex = False
         savePlt = True
         
         self.gui.MplWidget_310.plotBarChart(y, xlabel=xlabel, ylabel=ylabel, title=title, xticks=xticks, xticklabels=xticklabels, legend=legend, barChart='stacked', mpl=mpl,
                 annotations=annotations, annotations_position=annotations_position, xlim=xlim, dir_fileName=dir_fileName, vLines=None, savePlt=savePlt, saveTex=saveTex)
         
-        #self.gui.MplWidget_310.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title,
-        #                              legend=legend, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex)
-
 
     def plotResourceAnalysis_m2(self,buildingProp,materialProp):
 
@@ -1298,10 +1292,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Legende:
         legend = ['Tragwerk inkl. Horizontallastabtrag','Tragwerk ohne Horizontallastabtrag','Decken']
         title =None     #'Kummulierter Resourcenverbrauch nach Lastabtrag pro Geschossfläche'
-
-        #für Pickle
-        #legend = ['Tragwerk inkl. Horizontallastabtrag']
-        #title = 'Outrigger'
         
         maxWert=max(max(y1),max(y2),max(y3))
         minWert=min(min(y1),min(y2),min(y3))
@@ -1325,10 +1315,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "AnzahlOpt_alpha3_beta2_ressourcen_n2"#"Ressourcen nach Lastabtrag und Höhe pro m2" #"plot_as_pickle_05" 
-        saveTex = True
+        dir_fileName = "Ressourcen nach Lastabtrag und Höhe pro m2"
+        saveTex = False
         savePlt = True
-        savePkl = True
+        savePkl = False
         
         self.gui.MplWidget_340.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
                                       legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex, savePkl=savePkl)
@@ -1385,9 +1375,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Eigenfrequenz nach Höhe"  
-        saveTex = True
+        saveTex = False
         savePlt = True
-        savePkl = True
+        savePkl = False
         
         self.gui.MplWidget_350.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
                                       legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex,  savePkl=savePkl)
@@ -1416,7 +1406,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             xlabel = 'Anzahl Stockwerke [-]'
         
         # Legende:
-        title = None # 'Outrigger'      #'Eigenwerte nach Gebäudehöhe'
+        title = None #'Eigenwerte nach Gebäudehöhe'
         ylim=[]
 
         maxWert=max(y)
@@ -1431,10 +1421,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName =  "Biegemoment nach Höhe"# "plot_as_pickle_02"
+        dir_fileName =  "Biegemoment nach Höhe"
         saveTex = False
         savePlt = True
-        savePkl = True
+        savePkl = False
         
         self.gui.MplWidget_360.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
                                       legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex,  savePkl=savePkl)
@@ -1675,9 +1665,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Materialmenge nach Parameter"
-        saveTex = True
+        saveTex = False
         savePlt = True
-        savePkl = True
+        savePkl = False
         
         self.gui.MplWidget_410.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
                                     legend=legend, ylim=ylim, vLines=vLines, vTexts=vTexts, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex, savePkl=savePkl)
@@ -1744,8 +1734,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "betaOpt_alpha3_var_nabs8_optParameter"#"Optimaler Parameter nach Höhe"
-        saveTex = True
+        dir_fileName = "Optimaler Parameter nach Höhe"
+        saveTex = False
         savePlt = True
         
         self.gui.MplWidget_420.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
@@ -1823,8 +1813,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "Outriggerposition_ressourcenOpt_"#"Resourcen nach Lastabtrag und Höhe mit optimalem Parameter pro m2"
-        saveTex = True
+        dir_fileName ="Resourcen nach Lastabtrag und Höhe mit optimalem Parameter pro m2"
+        saveTex = False
         savePlt = True
         
         self.gui.MplWidget_430.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
@@ -1890,10 +1880,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
-        dir_fileName = "betaOpt_alpha3_var_nabs8_ressourcenvergleich"#"Vergleich Resourcenverbrauch nach Höhe mit und ohne optimalem Parameter"
-        saveTex = True
+        dir_fileName = "Vergleich Resourcenverbrauch nach Höhe mit und ohne optimalem Parameter"
+        saveTex = False
         savePlt = True
-        savePkl = True
+        savePkl = False
         
         self.gui.MplWidget_440.plot2D(x, y, xlabel=xlabel, ylabel=ylabel, title=title, mpl=mpl,
                                       legend=legend, ylim=ylim, dir_fileName=dir_fileName, savePlt=savePlt, saveTex=saveTex, savePkl=savePkl)
@@ -2111,10 +2101,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             ylabel = 'Outriggerposition 2 = xi_2*H'
         
         
-        # Legende:
-        #if self.gui.comboBox_zAxis_472.currentText() == 'Verformung':
-            #legend = ['w']
-        #else:
         legend = None#['Tragwerk inkl. Horizontallastabtrag']
         title =None 
         
@@ -2154,7 +2140,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Speichern:
         os.chdir(os.path.dirname(sys.argv[0]))
         dir_fileName = "Materialmenge nach Parameter 3D"
-        saveTex = True
+        saveTex = False
         savePlt = True
         
         self.gui.Widget_470.plot3DSurface(x, y, z, xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=title, mpl=mpl,
@@ -2275,21 +2261,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # Verändern von n und den zugehörigen Variablen
             buildingProp.n=(int(n_max-i*delta_n))
             buildingProp.n_abschnitt = int(min(self.gui.spinBox_n_abschnitt.value(),buildingProp.n))
-            buildingProp.multi_n.append(buildingProp.n) #Liste der untersuchten Stockwersanzahlen
+            buildingProp.multi_n.append(buildingProp.n)                                 # Liste der untersuchten Stockwersanzahlen
             buildingProp.h_total=buildingProp.h_geschoss*buildingProp.n
             buildingProp.multi_h_total.append(buildingProp.h_total)
             buildingProp.schlankheit=buildingProp.h_total/buildingProp.b_total
             buildingProp.multi_schlankheit.append(buildingProp.schlankheit)
-            buildingProp.multi_A.append((buildingProp.b_raster*4)**2*buildingProp.n)    #Geschossfläche*Geschossanzahl=Gesamtgebäudefläche
+            buildingProp.multi_A.append((buildingProp.b_raster*4)**2*buildingProp.n)    # Geschossfläche*Geschossanzahl=Gesamtgebäudefläche
 
-            buildingProp.x=int(buildingProp.n/buildingProp.n_abschnitt)    #Anzahl der Abschnitte bei aktueller Gebäudehöhe
-            loads.w_max=buildingProp.h_total/verhältnis_hw      #max. Verformung
+            buildingProp.x=int(buildingProp.n/buildingProp.n_abschnitt)                 # Anzahl der Abschnitte bei aktueller Gebäudehöhe
+            loads.w_max=buildingProp.h_total/verhältnis_hw                              # max. Verformung
 
             print('-------',buildingProp.n,'-------')
 
             self.mainCalculation(buildingProp,loads,materialProp,DataProp)
 
-            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1]) # Übernahme des Werts an Fußpunkt des Gebäudes (Summe des Gesamten), g=Maße
+            buildingProp.multi_G_aussteifung.append(buildingProp.G_aussteifung[-1])     # Übernahme des Werts an Fußpunkt des Gebäudes (Summe des Gesamten), g=Maße
             buildingProp.multi_G_außenStützen.append(buildingProp.G_außenStützen[-1])
             buildingProp.multi_G_innenStützen.append(buildingProp.G_innenStützen[-1])
             buildingProp.multi_G_total.append(buildingProp.G_total[-1])
@@ -2372,7 +2358,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.plotParameterAnalysis(buildingProp, materialProp)
         self.gui.progressBar.setValue(80)
-        #self.plotDeformation(buildingProp,materialProp)
 
         if buildingProp.parameter == 'Steifigkeitsverhältnis Alpha (Outrigger)':
             self.plotAlphaIst(buildingProp,materialProp)

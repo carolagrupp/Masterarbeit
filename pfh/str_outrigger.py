@@ -296,8 +296,8 @@ def outriggerSystemStiffness(randStütze, eckStütze, outrigger, buildingProp, m
             K_i = 12*E*I_outriggerGesamt*K_stütze[i]*b_total**2/(K_stütze[i]*b_total**3+24*E*I_outriggerGesamt)
             K.append(K_i)
     elif len(buildingProp.posOut) == 2:
-        K_st_unten = K_stütze[1]                                #bis unterer Outrigger
-        K_st_oben_inv = 1/K_stütze[0] - 1/K_stütze[1]         #zwischen oberem und unterem Outrigger
+        K_st_unten = K_stütze[1]                                # bis unterer Outrigger
+        K_st_oben_inv = 1/K_stütze[0] - 1/K_stütze[1]         # zwischen oberem und unterem Outrigger
         K_st_oben = 1/K_st_oben_inv
         I_out_oben = 2*I_outEff[0]
         I_out_unten = 2*I_outEff[1]
@@ -646,7 +646,7 @@ def design(buildingProp,loads,materialProp,DataProp):                           
             # Nachweis Outrigger: Vernachlässigt, da Beanspruchung nicht einfach betrachtbar
             
             # Nachweis Belt Truss
-            # System: Durchlaufträger von Eck- zu Eckstütze, beansprucht durch Moment aus Auflagerkräften Stützen und Outrigger
+            # System: gelagert auf Stützen von Eck- zu Eckstütze, beansprucht durch Moment aus Auflagerkräften Stützen und Outrigger
 
             belt.t = [0] * buildingProp.n
             A_Out = []

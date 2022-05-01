@@ -121,8 +121,8 @@ class MplWidget(QtWidgets.QWidget):
         #     plot2D.plot2D(x, y, *keyargs, dir_fileName='Your_file_name',
         #                   savePlt=savePlt, savePkl=savePkl, saveTex=saveTex, fig=None, ax=None)
 
-        figSize = plotHelpers.calcFigSize(aspectRatio=1, pageWidth=12)
-        #figSize = plotHelpers.calcFigSize(aspectRatio=2, pageWidth=20)
+        #figSize = plotHelpers.calcFigSize(aspectRatio=1, pageWidth=12)
+        figSize = plotHelpers.calcFigSize(aspectRatio=2, pageWidth=20)
 
         style_dict = {"lines.linewidth": 2, "figure.figsize": figSize}
 
